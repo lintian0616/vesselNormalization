@@ -1,0 +1,91 @@
+---
+title: "GSE Dataset Process"
+author: "Lin Tian"
+date: "2/3/2017"
+output: html_document
+---
+
+## Load `Biobase` and `GEOquery` packages.
+
+```{r}
+library(Biobase)
+library(GEOquery)
+```
+
+### Download the data by GEO ID
+
+Here, we use `GSE2990` as example. Download the data use `getGEO` function.
+
+```{r}
+GSE2990 <- getGEO(GEO="GSE2990", destdir=getwd())
+class(GSE2990)
+```
+
+The class of `GSE2990` is **list**. To convert it to `Biobase` class, you can use the following code.
+
+```{r}
+eset <- GSE2990[[1]]
+class(eset)
+
+## Sample Gene Expression/Profiling Data
+View(exprs(eset))
+
+## Sample Annotation/Clinical Data
+View(pData(eset))
+```
+
+You can check whether the dataset has been normalized using boxplot.
+
+```{r}
+dat <- exprs(eset)
+dim(dat)
+boxplot(dat[, 1:20]) ## plot first 20 samples
+```
+
+* If there is very big range between minumum and maximum value, you can apply `log2` transformation to the data set `dat <- log2(dat)`.
+* If the median intensity is not in the same level, you can use **median normalization** or **loess normalization**.
+* If you want to compare across different datasets, you can use **quantile normalization**.
+
+Here are the code for normalization:
+
+```{r}
+dat.norm.med <- normalizeMedianAbsValues(dat)
+boxplot(dat.norm.med, main="Median normalization")
+
+dat.norm.loess <- normalizeCyclicLoess(dat)
+boxplot(dat.norm.loess, main="Loess normalization")
+
+dat.norm.quantile <- normalizeBetweenArrays(dat, method="quantile")
+boxplot(dat.norm.quantile, main="Quantile normalization")
+```
+
+## Collapse probe name to gene names using Biomart
+
+```{r}
+library(biomaRt)
+ensembl <- useMart("ENSEMBL_MART_ENSEMBL", host="www.ensembl.org")
+listDatasets(ensembl) ## list available data set (species)
+ensembl <- useDataset("hsapiens_gene_ensembl",mart=ensembl)
+listFilters(ensembl) ## list available filters (probe set/microarray platform)
+map <- getBM(mart=ensembl, attributes=c("affy_hg_u133a", "hgnc_symbol"), filters="affy_hg_u133a", values=rownames(dat))
+map <- map[map$hgnc_symbol!="", ]
+sample.probe <- rownames(dat)[rownames(dat) %in% map$affy_hg_u133a]
+ambiguous <- sapply(sample.probe, function(x) length(unique(map$hgnc_symbol[map$affy_hg_u133a==x]))>1) ## remove probes that map to multiple genes
+sample.probe <- sample.probe[!ambiguous]
+map <- map[map$affy_hg_u133a %in% sample.probe, ]
+genenames <- unique(map$hgnc_symbol[map$affy_hg_u133a %in% sample.probe])
+
+dat.gene <- matrix(NA, nrow=length(genenames), ncol=ncol(dat))
+rownames(dat.gene) <- genenames
+colnames(dat.gene) <- colnames(dat)
+for(g in genenames) {
+  probes <- as.character(map$affy_hg_u133a[map$hgnc_symbol==g])
+  if(length(probes)==1) {
+    dat.gene[g, ] <- dat[probes, ]
+  }
+  else{
+    dat.gene[g, ] <- apply(dat[probes, ], 2, max)
+  }
+}
+```
+
