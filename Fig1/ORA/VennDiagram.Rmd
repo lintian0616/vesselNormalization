@@ -1,0 +1,36 @@
+---
+title: "Venn Diagram for GPAGs and PPAGs"
+author: "Lin Tian"
+date: "2/3/2017"
+output: html_document
+---
+
+## Load Pathways
+
+The `goodAngDisGO.csv` and `badAngDisGO.csv` are the outputs from [KOBAS](http://kobas.cbi.pku.edu.cn/index.php).
+
+```{r}
+setwd("~/vesselNormalization/Fig1/ORA")
+GPAG_pathway <- read.csv("goodAngDisGO.csv", as.is=TRUE)
+GPAGs <- GPAG_pathway[GPAG_pathway$P.Value<0.01, "ID"]
+
+PPAG_pathway <- read.csv("badAngDisGO.csv", as.is=TRUE)
+PPAGs <- PPAG_pathway[PPAG_pathway$P.Value<0.01, "ID"]
+```
+
+## Plot Venn Diagram
+
+```{r}
+## Common Pathways
+common <- intersect(GPAGs, PPAGs)
+
+## GPAG only
+GPAGsOnly <- GPAGs[!(GPAGs %in% PPAGs)]
+
+## PPAG only
+PPAGsOnly <- PPAGs[!(PPAGs %in% GPAGs)]
+
+source("https://raw.githubusercontent.com/lintian0616/tools/master/vennPlot.R")
+vennPlot(vennList=list(g1=GPAGs, g2=PPAGs), vennFill=brewer.pal(n=12, name="Set3"))
+```
+
