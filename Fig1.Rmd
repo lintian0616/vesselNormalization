@@ -1,0 +1,164 @@
+---
+title: "Supplementary Code 1"
+date: "2/1/2016"
+---
+
+## Load METABRIC Discovery dataset and essential packages
+
+```{r}
+setwd("~/vesselNormalization")
+load("~/rstudio/lintian/metabric.exp.RData") # load METABRIC Discovery Dataset; you need apply to the access to the dataset
+load("~/vesselNormalization/data/GO0001525_Angiogenesis.RData") # load 377 genes in angiogenesis pathway (GO:0001525)
+library(limma) ## package for gene differential expression analysis
+```
+
+The gene expression information is stored in **metabric.d.exp**; row: patient/sample ids; col: gene names
+The patient annotation information is stored in **metabric.d.ann**; row: patient/sample ids; col: clinical parameters
+
+## Select Patients
+
+Only patients who were survived or died of cancer are kept.
+Patients whose survival information is lost or were not died of cancer are removed.
+
+The patients who were alived were relabeled as 'a'; the patients who died of cancer were relabeled with 'dds' (disease specific death).
+
+```{r}
+selected_patient.d <- which(metabric.d.ann$last_follow_up_status == "a" | metabric.d.ann$last_follow_up_status == "d-d.s.")
+selected_patient.d.exp <- metabric.d.exp[selected_patient.d, angiogenesis]
+selected_patient.d.ann <- metabric.d.ann[selected_patient.d, ]
+selected_patient.d.ann$last_follow_up_status <- ifelse(selected_patient.d.ann$last_follow_up_status=="d-d.s.", "dds", "a")
+```
+
+## Differential Genes Selection
+
+```{r}
+survival <- factor(selected_patient.d.ann$last_follow_up_status)
+design <- model.matrix(~0+survival) # Design matrix
+contrast.matrix <- makeContrasts(contrasts="survivala - survivaldds", levels=design) # Make contrasts
+fit <- lmFit(t(selected_patient.d.exp), design) # Linear model fitting
+fit1 <- contrasts.fit(fit, contrast.matrix)
+fit2 <- eBayes(fit1) # Bayes test
+dif <- topTable(fit2, coef="survivala - survivaldds", n=nrow(fit2), adjust.method="fdr") # calculate the fold change, p value and false discovery rate (fdr)
+dif <- dif[dif[, "adj.P.Val"]<0.01, ] # keep genes whose false discovery rate is below 0.01
+
+# Get GPAGs (up-regulated in patients whose survival status is 'a': survivala - survivaldds > 0)
+GPAGs <- subset(dif, logFC > 0)
+GPAGs <- GPAGs[order(GPAGs$logFC, decreasing = TRUE), ]
+GPAGs
+
+# Get PPAGs (down-regulated in patients whose survival status is 'a': survivala - survivaldds < 0)
+PPAGs <- subset(dif, logFC < 0)
+PPAGs <- PPAGs[order(PPAGs$logFC, decreasing = FALSE), ]
+PPAGs
+```
+
+## Visualization of GPAGs and PPAGs Using Heatmap
+
+```{r}
+library(gplots) ## For plot the heatmap
+library(amap) ## For calculate the distance
+library(dendextend) ## For draw the dendrogram
+library(RColorBrewer)
+select.ang.genes <- c(rownames(GPAGs), rownames(PPAGs)) ## combine GPAG names and PPAG names
+## Row Cluster Labeling
+row_dist <- Dist(t(selected_patient.d.exp[, select.ang.genes]), method="spearman")
+rdend <- as.dendrogram(hclust(row_dist, method="ward.D"))
+rowv <- rdend %>% set("branches_lwd", 2) %>%  set("by_labels_branches_lty", value=rownames(PPAGs), TF_values = c(3,Inf))
+## Column Cluster Labeling
+col_dist <- Dist(selected_patient.d.exp[, select.ang.genes], method="kendall")
+colv <- color_branches(as.dendrogram(hclust(col_dist, method="ward.D")), k=2)
+
+hmcol <- c(rep("#B35806", 90), colorRampPalette(brewer.pal(11, "PuOr"))(50), rep("#542788", 100))
+
+heatmap.2(t(selected_patient.d.exp[, select.ang.genes]), col=hmcol, Rowv=rowv, Colv=colv, trace = "none", scale ="row", labRow=NA, labCol=NA, keysize = 1.2, key.title="Color Key")
+```
+
+## Survival Analysis on Two Clusters in the Heatmap
+
+```{r}
+library(survival)
+patient.label <- cutree(hclust(col_dist, method="ward.D"), k=2) ## Get labeling information of the two clusters in the heatmap
+survdiff(Surv(selected_patient.d.ann$T/30, selected_patient.d.ann$DSS) ~ patient.label) # p = 4.47e-09
+coxph(Surv(selected_patient.d.ann$T/30, selected_patient.d.ann$DSS) ~ patient.label) # Hazard Ratio > 2
+plot(survfit(Surv(selected_patient.d.ann$T/30, selected_patient.d.ann$DSS) ~ patient.label), col=c("#009681", "#CC476B"), lty=1, lwd=1, xlab = "Months", ylab = "Disease-Free Survival Prob.", ylim=c(0, 1))
+legend("bottomleft", c("Cluster I (151/333)", "Cluster II (109/475)"), col=c("#CC476B", "#009681"), lty=1, bty = "n", lwd=1)
+```
+
+## Test the ($\sum$GPAGs - $\sum$PPAGs) in METABRIC Validation Dataset
+
+The gene expression information is stored in **metabric.v.exp**; row: patient/sample ids; col: gene names
+The patient annotation information is stored in **metabric.v.ann**; row: patient/sample ids; col: clinical parameters
+
+```{r}
+combineAng.vScore <- apply(metabric.v.exp[, rownames(GPAGs)], 1, sum) - apply(metabric.v.exp[, rownames(PPAGs)], 1, sum)
+combineAng.vGroup <- cut(combineAng.vScore, breaks = quantile(combineAng.vScore, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
+combineAng.vGroup[is.na(combineAng.vGroup)] = "low"
+combineAng.vGroup <- factor(combineAng.vGroup, levels=c("high", "medium", "low"))
+survdiff(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combineAng.vGroup) # p = 7.49e-06
+plot(survfit(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combineAng.vGroup), col=c("red", "orange", "green"), lty=1, lwd=1, xlab = "Months", ylab = "Disease-Free Survival Prob.", ylim=c(0, 1))
+legend("bottomleft", c("high (50/329)", "med (75/330)", "low (121/332)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=1)
+```
+
+## Test the ($\sum$GPAGs - $\sum$PPAGs) for Relapse in (GSE1456)
+
+```{r}
+load("data/gse1456.RData") ## Used processed GSE1456.RData
+```
+
+The gene expression information is stored in **gse1456.exp**; row: gene names; col: patient/sample ids
+The patient annotation information is stored in **gse1456.ann**; row: patient/sample ids; col: clinical parameters
+
+```{r}
+GPAGs_gse1456 <- rownames(GPAGs)[rownames(GPAGs) %in% rownames(gse1456.exp)]
+PPAGs_gse1456 <- rownames(PPAGs)[rownames(PPAGs) %in% rownames(gse1456.exp)]
+gse1456.combine <- apply(gse1456.exp[GPAGs_gse1456, ], 2, sum) - apply(gse1456.exp[PPAGs_gse1456, ], 2, sum)
+gse1456.combine.group <- cut(gse1456.combine, breaks = quantile(gse1456.combine, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
+gse1456.combine.group[is.na(gse1456.combine.group)] = "low"
+survdiff(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ gse1456.combine.group) # p = 6.89e-05
+plot(survfit(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ gse1456.combine.group), col=c("green", "orange", "red"), lty=1, lwd=1, xlab = "Months", ylab = "Relapse-Free Survival Prob.", ylim=c(0, 1))
+legend("bottomleft", c("high (6/53)", "med (10/53)", "low (24/53)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=1)
+```
+
+## Test the ($\sum$GPAGs - $\sum$PPAGs) for Distant Metastasis in (GSE2990)
+
+```{r}
+load("data/gse2990.RData")
+```
+
+The gene expression information is stored in **gse2990.exp**; row: gene names; col: patient/sample ids
+The patient annotation information is stored in **gse2990.ann**; row: patient/sample ids; col: clinical parameters
+
+```{r}
+GPAGs_gse2990 <- rownames(GPAGs)[rownames(GPAGs) %in% rownames(gse2990.exp)]
+PPAGs_gse2990 <- rownames(PPAGs)[rownames(PPAGs) %in% rownames(gse2990.exp)]
+gse2990.combine <- apply(gse2990.exp[GPAGs_gse2990, ], 2, sum) - apply(gse2990.exp[PPAGs_gse2990, ], 2, sum)
+gse2990.combine.group <- cut(gse2990.combine, breaks = quantile(gse2990.combine, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
+gse2990.combine.group[is.na(gse2990.combine.group)] = "low"
+survdiff(Surv(gse2990.ann$time.dmfs*12, gse2990.ann$event.dmfs) ~ gse2990.combine.group) # p = 0.0022
+plot(survfit(Surv(gse2990.ann$time.dmfs*12, gse2990.ann$event.dmfs) ~ gse2990.combine.group), col=c("green", "orange", "red"), lty=1, lwd=1, xlab = "Months", ylab = "Distant Metastasis-Free Survival Prob.", ylim=c(0, 1))
+legend("bottomleft", c("high (8/59)", "med (10/60)", "low (22/60)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
+```
+
+## Correlation of GPAGs and PPAGs with T Cell Activation
+
+To test the correlation of GPAGs, PPAGs with T cell activation, we used the samples in the combined METABRIC dataset (Discovery and Validation).
+
+```{r}
+library(LSD)
+load("data/GO0042110_TcellActivation.RData")
+
+## Correlation between GPAGs and TCR activation
+cor.test(apply(metabric.a.exp[, rownames(GPAGs)], 1, sum), apply(metabric.a.exp[, GO0042110], 1, sum))
+
+## Correlation between PPAGs and TCR activation
+cor.test(apply(metabric.a.exp[, rownames(PPAGs)], 1, sum), apply(metabric.a.exp[, GO0042110], 1, sum))
+
+TCR_sig <- rbind(data.frame(ang=apply(metabric.a.exp[, rownames(GPAGs)], 1, sum), TCR=apply(metabric.a.exp[, GO0042110], 1, sum), type="GPAGs"), data.frame(ang=apply(metabric.a.exp[, rownames(PPAGs)], 1, sum), TCR=apply(metabric.a.exp[, GO0042110], 1, sum), type="PPAGs"))
+TCR_sig$norm_ang <- scale(TCR_sig$ang)
+TCR_sig$norm_TCR <- scale(TCR_sig$TCR)
+
+heatscatter(as.numeric(TCR_sig[TCR_sig$type=="GPAGs", "norm_ang"]), as.numeric(TCR_sig[TCR_sig$type=="GPAGs", "norm_TCR"]), colpal="bl2gr2rd", xlab="Normalized Angiogenesis Signature", ylab="Normalized TCR signaling", cor=TRUE, cex.main=1, main="Correlation of GPAGs with T Cell Activation;")
+
+heatscatter(as.numeric(TCR_sig[ TCR_sig$type=="PPAGs", "norm_ang"]), as.numeric(TCR_sig[TCR_sig$type=="PPAGs", "norm_TCR"]), colpal="bl2gr2rd", xlab="Normalized Angiogenesis Signature", ylab="Normalized TCR signaling", cor=TRUE, cex.main=1, main="Correlation of PPAGs with T Cell Activation;")
+```
+
