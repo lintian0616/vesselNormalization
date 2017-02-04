@@ -1,0 +1,98 @@
+---
+title: "REVIGO Bad Angiogenesis"
+author: "Lin Tian"
+date: "7/1/2015"
+output: html_document
+---
+
+Load Packages
+
+```{r}
+library(ggplot2)
+library(scales)
+```
+
+## Poor Prognosis Angiogenesis Genes (PPAGs)
+
+### Load Bad Angiogenesis Genes Data
+
+```{r}
+revigo.names <- c("term_ID","description","frequency_%","plot_X","plot_Y","plot_size","log10_p_value","uniqueness","dispensability")
+revigo.data <- rbind(c("GO:0001666","response to hypoxia", 0.019, 3.220,-3.944, 3.980,-2.4348,0.902,0.000),
+c("GO:0022610","biological adhesion", 1.210,-0.390,-2.119, 5.780,-2.8182,0.978,0.000),
+c("GO:0030155","regulation of cell adhesion", 0.021, 2.223, 5.181, 4.016,-5.0778,0.796,0.000),
+c("GO:0051170","nuclear import", 0.098, 3.438,-0.705, 4.689,-2.4811,0.742,0.000),
+c("GO:0030224","monocyte differentiation", 0.002,-6.425, 0.672, 2.948,-3.6552,0.506,0.015),
+c("GO:0022617","extracellular matrix disassembly", 0.001,-1.287,-6.197, 2.867,-2.7291,0.791,0.046),
+c("GO:0006693","prostaglandin metabolic process", 0.002,-3.250,-5.333, 2.988,-2.0229,0.896,0.046),
+c("GO:0006356","regulation of transcription from RNA polymerase I promoter", 0.001, 4.077, 5.567, 2.667,-2.8131,0.859,0.171),
+c("GO:0051222","positive regulation of protein transport", 0.013, 4.465, 2.443, 3.814,-3.5223,0.605,0.190),
+c("GO:0060548","negative regulation of cell death", 0.051, 3.411, 6.395, 4.408,-2.4606,0.797,0.214),
+c("GO:0070528","protein kinase C signaling", 0.002, 5.202, 1.545, 2.926,-2.2115,0.793,0.227),
+c("GO:0051239","regulation of multicellular organismal process", 0.256, 2.857, 6.134, 5.105,-2.2242,0.840,0.244),
+c("GO:0007044","cell-substrate junction assembly", 0.004,-0.035,-6.032, 3.314,-2.5066,0.769,0.284),
+c("GO:0050808","synapse organization", 0.011,-0.141,-6.370, 3.737,-2.3010,0.784,0.314),
+c("GO:0043062","extracellular structure organization", 0.016,-0.940,-6.645, 3.889,-2.2760,0.780,0.337),
+c("GO:0030030","cell projection organization", 0.378,-0.668,-6.195, 5.274,-2.2007,0.740,0.420),
+c("GO:0030574","collagen catabolic process", 0.001,-6.150, 3.177, 2.848,-2.3724,0.623,0.438),
+c("GO:0034105","positive regulation of tissue remodeling", 0.001,-3.197, 3.161, 2.814,-2.2747,0.492,0.491),
+c("GO:0001763","morphogenesis of a branching structure", 0.016,-6.539, 0.936, 3.904,-2.6465,0.529,0.492),
+c("GO:0017038","protein import", 0.108, 5.281,-1.020, 4.731,-2.3037,0.765,0.516),
+c("GO:0007565","female pregnancy", 0.006,-6.052, 2.882, 3.454,-2.1756,0.629,0.519),
+c("GO:0050729","positive regulation of inflammatory response", 0.005, 3.811, 2.429, 3.393,-2.3567,0.732,0.525),
+c("GO:0030307","positive regulation of cell growth", 0.006, 2.339,-1.446, 3.464,-2.9365,0.609,0.530),
+c("GO:0034504","protein localization to nucleus", 0.025, 4.779,-0.985, 4.094,-2.2156,0.744,0.531),
+c("GO:0031100","organ regeneration", 0.001,-5.774, 1.443, 2.619,-2.8112,0.547,0.535),
+c("GO:0045785","positive regulation of cell adhesion", 0.010, 2.885, 4.274, 3.709,-3.3143,0.696,0.583),
+c("GO:0007411","axon guidance", 0.014,-4.099,-0.692, 3.838,-3.6039,0.371,0.591),
+c("GO:0002088","lens development in camera-type eye", 0.005,-6.075, 1.040, 3.360,-2.5994,0.514,0.596),
+c("GO:0031589","cell-substrate adhesion", 0.021, 0.031, 6.512, 4.023,-3.1916,0.912,0.608),
+c("GO:0001701","in utero embryonic development", 0.022,-6.157, 2.053, 4.036,-2.3263,0.491,0.619),
+c("GO:0030879","mammary gland development", 0.008,-6.227, 1.707, 3.610,-2.4929,0.502,0.624),
+c("GO:0001934","positive regulation of protein phosphorylation", 0.039, 4.145, 4.410, 4.287,-2.1992,0.730,0.637),
+c("GO:0007155","cell adhesion", 0.564, 0.558, 5.698, 5.448,-2.8323,0.911,0.640),
+c("GO:0001655","urogenital system development", 0.022,-5.968, 1.864, 4.031,-2.6998,0.486,0.649),
+c("GO:0072001","renal system development", 0.019,-6.097, 1.459, 3.970,-2.2489,0.490,0.661),
+c("GO:0003007","heart morphogenesis", 0.016,-6.535, 1.625, 3.900,-2.0154,0.484,0.667),
+c("GO:0070482","response to oxygen levels", 0.020, 3.771,-4.357, 3.998,-2.3247,0.911,0.674),
+c("GO:0000902","cell morphogenesis", 0.841,-4.772,-2.044, 5.622,-3.1928,0.422,0.692),
+c("GO:0035239","tube morphogenesis", 0.026,-6.526, 1.299, 4.108,-2.5060,0.487,0.698))
+```
+
+### Cleaning PPAGs Dataframe
+
+```{r}
+one.data <- data.frame(revigo.data)
+names(one.data) <- revigo.names
+one.data <- one.data[(one.data$plot_X != "null" & one.data$plot_Y != "null"), ]
+one.data$plot_X <- as.numeric( as.character(one.data$plot_X))
+one.data$plot_Y <- as.numeric( as.character(one.data$plot_Y))
+one.data$plot_size <- as.numeric( as.character(one.data$plot_size))
+one.data$log10_p_value <- as.numeric( as.character(one.data$log10_p_value))
+one.data$frequency <- as.numeric( as.character(one.data$frequency))
+one.data$uniqueness <- as.numeric( as.character(one.data$uniqueness))
+one.data$dispensability <- as.numeric( as.character(one.data$dispensability))
+
+select_term <- c("monocyte differentiation", "biological adhesion", "regulation of cell adhesion", "nuclear import", "response to hypoxia", "extracellular matrix disassembly", "axon guidance", "cell morphogenesis")
+ex <- one.data[one.data$description %in% select_term, ]
+```
+
+### Make Plot for PPAGs
+
+```{r}
+p1 <- ggplot(data=one.data)
+p1 <- p1 + geom_point(aes( plot_X, plot_Y, colour=log10_p_value, size=plot_size), alpha=I(0.8))
+p1 <- p1 + scale_colour_gradientn(colours=c("blue", "green", "yellow", "red"), limits=c(min(one.data$log10_p_value), max(one.data$log10_p_value)))
+p1 <- p1 + geom_point(aes(plot_X, plot_Y, size=plot_size), shape=21, fill="transparent", colour=I(alpha ("black", 0.6)))
+p1 <- p1 + scale_size(range=c(5, 25)) + theme_bw()
+p1 <- p1 + geom_text(data=ex, aes(plot_X, plot_Y, label=description))
+p1 <- p1 + labs (y = "semantic space x", x = "semantic space y")
+p1 <- p1 + theme(legend.key=element_blank())
+one.x_range <- max(one.data$plot_X) - min(one.data$plot_X)
+one.y_range <- max(one.data$plot_Y) - min(one.data$plot_Y)
+p1 <- p1 + xlim(min(one.data$plot_X)-one.x_range/10,max(one.data$plot_X)+one.x_range/10)
+p1 <- p1 + ylim(min(one.data$plot_Y)-one.y_range/10,max(one.data$plot_Y)+one.y_range/10)
+p1
+ggsave(plot=p1, filename="~/projects/thesisDefense/REVIGO/revigo-plot-badAng.pdf", width=7.86,height=6.18, units="in")
+```
+

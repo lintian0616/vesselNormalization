@@ -1,0 +1,117 @@
+---
+title: "REVIGO Good Angiogenesis"
+author: "Lin Tian"
+date: "7/1/2015"
+output: html_document
+---
+
+Load Packages
+
+```{r}
+library(ggplot2)
+library(scales)
+```
+
+## Good Prognosis Angiogenesis Genes (GPAGs)
+
+### Load Good Angiogenesis Genes Data
+
+```{r}
+revigo.names <- c("term_ID","description","frequency_%","plot_X","plot_Y","plot_size","log10_p_value","uniqueness","dispensability")
+revigo.data <- rbind(c("GO:0001938","positive regulation of endothelial cell proliferation", 0.003, 2.549,-7.027, 3.205,-6.5735,0.695,0.000),
+c("GO:0006809","nitric oxide biosynthetic process", 0.013,-1.276, 2.626, 3.821,-2.3250,0.961,0.015),
+c("GO:0048730","epidermis morphogenesis", 0.002,-6.127, 1.122, 3.089,-4.1355,0.636,0.027),
+c("GO:0001667","ameboidal cell migration", 0.018, 1.884, 1.288, 3.945,-6.2782,0.790,0.030),
+c("GO:0008283","cell proliferation", 0.105,-1.019, 2.240, 4.717,-2.9771,0.939,0.037),
+c("GO:0016265","death", 0.279,-1.266, 3.319, 5.142,-2.4730,0.936,0.045),
+c("GO:0046209","nitric oxide metabolic process", 0.014,-0.733, 1.851, 3.829,-2.0230,0.986,0.065),
+c("GO:0006928","cellular component movement", 0.492,-0.446, 1.233, 5.389,-2.8328,0.912,0.072),
+c("GO:0045321","leukocyte activation", 0.040,-2.932, 1.364, 4.304,-2.7580,0.877,0.077),
+c("GO:0051647","nucleus localization", 0.002,-0.012, 0.135, 3.017,-2.1142,0.961,0.146),
+c("GO:0048554","positive regulation of metalloenzyme activity", 0.001, 3.161,-5.988, 2.453,-3.0064,0.831,0.147),
+c("GO:0034114","regulation of heterotypic cell-cell adhesion", 0.001, 2.930,-4.559, 2.714,-2.5049,0.816,0.158),
+c("GO:0032878","regulation of establishment or maintenance of cell polarity", 0.001, 2.869,-4.675, 2.762,-2.4445,0.809,0.158),
+c("GO:0019915","lipid storage", 0.006, 1.422,-5.117, 3.483,-2.2823,0.792,0.162),
+c("GO:2001236","regulation of extrinsic apoptotic signaling pathway", 0.010, 5.834,-0.138, 3.717,-5.1746,0.515,0.176),
+c("GO:0051674","localization of cell", 0.402,-0.298,-0.146, 5.301,-4.4225,0.953,0.200),
+c("GO:0019216","regulation of lipid metabolic process", 0.043, 2.194,-6.088, 4.328,-2.5129,0.775,0.207),
+c("GO:0043627","response to estrogen", 0.006, 4.818, 4.817, 3.452,-4.2306,0.764,0.234),
+c("GO:0009612","response to mechanical stimulus", 0.009, 4.630, 4.146, 3.632,-3.9868,0.803,0.239),
+c("GO:0009605","response to external stimulus", 1.384, 4.659, 4.357, 5.838,-2.4968,0.791,0.329),
+c("GO:0038034","signal transduction in absence of ligand", 0.005, 5.514, 0.275, 3.403,-2.6927,0.709,0.330),
+c("GO:0019372","lipoxygenase pathway", 0.000,-0.260,-2.865, 2.246,-2.5049,0.919,0.332),
+c("GO:0000165","MAPK cascade", 0.054, 5.616,-0.248, 4.425,-2.0659,0.673,0.377),
+c("GO:0006639","acylglycerol metabolic process", 0.006,-0.267,-3.146, 3.438,-2.3165,0.910,0.384),
+c("GO:0006638","neutral lipid metabolic process", 0.006,-0.213,-3.172, 3.447,-2.3029,0.910,0.384),
+c("GO:0071696","ectodermal placode development", 0.001,-5.632, 3.490, 2.766,-2.3356,0.802,0.395),
+c("GO:0009611","response to wounding", 0.111, 4.323, 4.669, 4.744,-2.1467,0.811,0.400),
+c("GO:0009719","response to endogenous stimulus", 0.113, 5.108, 4.700, 4.750,-2.2993,0.820,0.400),
+c("GO:0001709","cell fate determination", 0.003,-5.667, 3.319, 3.179,-2.6513,0.777,0.404),
+c("GO:0048552","regulation of metalloenzyme activity", 0.001, 2.823,-5.804, 2.511,-3.0064,0.830,0.416),
+c("GO:0010575","positive regulation vascular endothelial growth factor production", 0.001,-3.141,-4.481, 2.802,-3.5143,0.583,0.458),
+c("GO:0001659","temperature homeostasis", 0.004,-3.796,-3.897, 3.281,-2.8406,0.614,0.466),
+c("GO:0061061","muscle structure development", 0.035,-5.768, 3.349, 4.247,-2.3937,0.771,0.468),
+c("GO:2000116","regulation of cysteine-type endopeptidase activity", 0.012, 3.048,-6.235, 3.761,-2.1223,0.799,0.476),
+c("GO:0050927","positive regulation of positive chemotaxis", 0.002, 5.666,-0.566, 2.892,-4.5622,0.542,0.489),
+c("GO:0042303","molting cycle", 0.007,-6.538,-0.873, 3.530,-2.5719,0.728,0.490),
+c("GO:0045834","positive regulation of lipid metabolic process", 0.006, 1.809,-6.612, 3.457,-2.4608,0.716,0.492),
+c("GO:0032846","positive regulation of homeostatic process", 0.004, 1.603,-6.956, 3.342,-2.0395,0.722,0.500),
+c("GO:0007566","embryo implantation", 0.002,-6.310, 0.996, 3.007,-2.6225,0.676,0.500),
+c("GO:0010035","response to inorganic substance", 0.273, 4.628, 4.477, 5.133,-2.1418,0.757,0.519),
+c("GO:0050918","positive chemotaxis", 0.003, 5.050, 5.098, 3.222,-3.6539,0.719,0.531),
+c("GO:0045740","positive regulation of DNA replication", 0.003, 1.882,-6.514, 3.178,-2.3034,0.745,0.566),
+c("GO:0045907","positive regulation of vasoconstriction", 0.001,-3.013,-4.672, 2.730,-3.3460,0.574,0.584),
+c("GO:0071260","cellular response to mechanical stimulus", 0.003, 5.390, 4.130, 3.202,-3.0846,0.796,0.584),
+c("GO:0046683","response to organophosphorus", 0.005, 4.771, 4.846, 3.366,-2.2240,0.778,0.591),
+c("GO:0010573","vascular endothelial growth factor production", 0.002,-6.367,-0.879, 2.911,-3.2455,0.741,0.596),
+c("GO:0002573","myeloid leukocyte differentiation", 0.012,-5.926, 1.139, 3.791,-3.2476,0.603,0.617),
+c("GO:0042246","tissue regeneration", 0.003,-0.525, 5.651, 3.179,-2.7110,0.628,0.630),
+c("GO:0035112","genitalia morphogenesis", 0.001,-6.273, 1.059, 2.721,-2.5049,0.666,0.650),
+c("GO:0022612","gland morphogenesis", 0.009,-6.322, 1.032, 3.652,-2.2114,0.648,0.661),
+c("GO:0032101","regulation of response to external stimulus", 0.316, 5.757,-0.282, 5.196,-3.1394,0.598,0.662),
+c("GO:0043525","positive regulation of neuron apoptotic process", 0.002, 2.118,-5.609, 3.050,-2.5672,0.606,0.669),
+c("GO:0033993","response to lipid", 0.061, 4.894, 4.844, 4.484,-2.7051,0.748,0.680),
+c("GO:0060711","labyrinthine layer development", 0.003,-6.560, 1.307, 3.123,-2.4639,0.662,0.680),
+c("GO:0097285","cell-type specific apoptotic process", 0.025, 2.464,-0.455, 4.094,-3.8377,0.744,0.686),
+c("GO:0033002","muscle cell proliferation", 0.007, 0.323,-1.814, 3.523,-4.8962,0.884,0.687),
+c("GO:0048660","regulation of smooth muscle cell proliferation", 0.003, 2.550,-4.972, 3.227,-6.1068,0.760,0.690),
+c("GO:0060425","lung morphogenesis", 0.004,-6.492, 1.316, 3.312,-3.6539,0.648,0.693))
+```
+
+### Cleaning GPAGs Dataframe
+
+```{r}
+one.data <- data.frame(revigo.data)
+names(one.data) <- revigo.names
+one.data <- one.data[(one.data$plot_X != "null" & one.data$plot_Y != "null"), ]
+one.data$plot_X <- as.numeric( as.character(one.data$plot_X))
+one.data$plot_Y <- as.numeric( as.character(one.data$plot_Y))
+one.data$plot_size <- as.numeric( as.character(one.data$plot_size))
+one.data$log10_p_value <- as.numeric( as.character(one.data$log10_p_value))
+one.data$frequency <- as.numeric( as.character(one.data$frequency))
+one.data$uniqueness <- as.numeric( as.character(one.data$uniqueness))
+one.data$dispensability <- as.numeric( as.character(one.data$dispensability))
+
+select_term <- c("ameboidal cell migration", "response to mechanical stimulus", "localization of cell", "epidermis morphogenesis", "positive regulation of vasoconstriction", "muscle structure development", "regulation of smooth muscle cell proliferation", "regulation of heterotypic cell-cell adhesion", "positive regulation of endothelial cell proliferation")
+ex <- one.data[one.data$description %in% select_term, ]
+```
+
+### Make Plot for GPAGs
+
+```{r}
+p1 <- ggplot(data=one.data)
+p1 <- p1 + geom_point(aes( plot_X, plot_Y, colour=log10_p_value, size=plot_size), alpha=I(0.8))
+p1 <- p1 + scale_colour_gradientn(colours=c("blue", "green", "yellow", "red"), limits=c(min(one.data$log10_p_value), max(one.data$log10_p_value)))
+p1 <- p1 + geom_point(aes(plot_X, plot_Y, size=plot_size), shape=21, fill="transparent", colour=I(alpha ("black", 0.6)))
+p1 <- p1 + scale_size(range=c(5, 25)) + theme_bw()
+p1 <- p1 + geom_text(data=ex, aes(plot_X, plot_Y, label=description))
+p1 <- p1 + labs (y = "semantic space x", x = "semantic space y")
+p1 <- p1 + theme(legend.key=element_blank())
+one.x_range <- max(one.data$plot_X) - min(one.data$plot_X)
+one.y_range <- max(one.data$plot_Y) - min(one.data$plot_Y)
+p1 <- p1 + xlim(min(one.data$plot_X)-one.x_range/10,max(one.data$plot_X)+one.x_range/10)
+p1 <- p1 + ylim(min(one.data$plot_Y)-one.y_range/10,max(one.data$plot_Y)+one.y_range/10)
+p1
+ggsave(plot=p1, filename="~/projects/thesisDefense/REVIGO/revigo-plot-goodAng.pdf", width=7.86,height=6.18, units="in")
+```
+

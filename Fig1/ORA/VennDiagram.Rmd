@@ -11,10 +11,10 @@ The `goodAngDisGO.csv` and `badAngDisGO.csv` are the outputs from [KOBAS](http:/
 
 ```{r}
 setwd("~/vesselNormalization/Fig1/ORA")
-GPAG_pathway <- read.csv("goodAngDisGO.csv", as.is=TRUE)
+GPAG_pathway <- read.csv("~/vesselNormalization/data/GPAGsDisGO.csv", as.is=TRUE)
 GPAGs <- GPAG_pathway[GPAG_pathway$P.Value<0.01, "ID"]
 
-PPAG_pathway <- read.csv("badAngDisGO.csv", as.is=TRUE)
+PPAG_pathway <- read.csv("~/vesselNormalization/data/PPAGsDisGO.csv", as.is=TRUE)
 PPAGs <- PPAG_pathway[PPAG_pathway$P.Value<0.01, "ID"]
 ```
 
