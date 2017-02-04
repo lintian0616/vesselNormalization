@@ -52,7 +52,7 @@ PPAGs <- PPAGs[order(PPAGs$logFC, decreasing = FALSE), ]
 PPAGs
 ```
 
-## Visualization of GPAGs and PPAGs Using Heatmap
+## Visualization of GPAGs and PPAGs Using Heatmap (Fig.1a)
 
 ```{r}
 library(gplots) ## For plot the heatmap
@@ -73,7 +73,7 @@ hmcol <- c(rep("#B35806", 90), colorRampPalette(brewer.pal(11, "PuOr"))(50), rep
 heatmap.2(t(selected_patient.d.exp[, select.ang.genes]), col=hmcol, Rowv=rowv, Colv=colv, trace = "none", scale ="row", labRow=NA, labCol=NA, keysize = 1.2, key.title="Color Key")
 ```
 
-## Survival Analysis on Two Clusters in the Heatmap
+## Survival Analysis on Two Clusters in the Heatmap (Fig.1b)
 
 ```{r}
 library(survival)
@@ -84,7 +84,7 @@ plot(survfit(Surv(selected_patient.d.ann$T/30, selected_patient.d.ann$DSS) ~ pat
 legend("bottomleft", c("Cluster I (151/333)", "Cluster II (109/475)"), col=c("#CC476B", "#009681"), lty=1, bty = "n", lwd=1)
 ```
 
-## Test the ($\sum$GPAGs - $\sum$PPAGs) in METABRIC Validation Dataset
+## Test the ($\sum$GPAGs - $\sum$PPAGs) in METABRIC Validation Dataset (Fig.1c)
 
 The gene expression information is stored in **metabric.v.exp**; row: patient/sample ids; col: gene names
 The patient annotation information is stored in **metabric.v.ann**; row: patient/sample ids; col: clinical parameters
@@ -99,10 +99,10 @@ plot(survfit(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combineAng.vGroup),
 legend("bottomleft", c("high (50/329)", "med (75/330)", "low (121/332)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=1)
 ```
 
-## Test the ($\sum$GPAGs - $\sum$PPAGs) for Relapse in (GSE1456)
+## Test the ($\sum$GPAGs - $\sum$PPAGs) for Relapse in (GSE1456) (Fig.1d)
 
 ```{r}
-load("data/gse1456.RData") ## Used processed GSE1456.RData
+load("~/vesselNormalization/data/gse1456.RData") ## Used processed GSE1456.RData
 ```
 
 The gene expression information is stored in **gse1456.exp**; row: gene names; col: patient/sample ids
@@ -119,10 +119,10 @@ plot(survfit(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ gse1456.combine.group)
 legend("bottomleft", c("high (6/53)", "med (10/53)", "low (24/53)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=1)
 ```
 
-## Test the ($\sum$GPAGs - $\sum$PPAGs) for Distant Metastasis in (GSE2990)
+## Test the ($\sum$GPAGs - $\sum$PPAGs) for Distant Metastasis in (GSE2990) (Fig.1e)
 
 ```{r}
-load("data/gse2990.RData")
+load("~/vesselNormalization/data/gse2990.RData")
 ```
 
 The gene expression information is stored in **gse2990.exp**; row: gene names; col: patient/sample ids
@@ -139,13 +139,13 @@ plot(survfit(Surv(gse2990.ann$time.dmfs*12, gse2990.ann$event.dmfs) ~ gse2990.co
 legend("bottomleft", c("high (8/59)", "med (10/60)", "low (22/60)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 ```
 
-## Correlation of GPAGs and PPAGs with T Cell Activation
+## Correlation of GPAGs and PPAGs with T Cell Activation (Fig.1i)
 
 To test the correlation of GPAGs, PPAGs with T cell activation, we used the samples in the combined METABRIC dataset (Discovery and Validation).
 
 ```{r}
 library(LSD)
-load("data/GO0042110_TcellActivation.RData")
+load("~/vesselNormalization/data/GO0042110_TcellActivation.RData")
 
 ## Correlation between GPAGs and TCR activation
 cor.test(apply(metabric.a.exp[, rownames(GPAGs)], 1, sum), apply(metabric.a.exp[, GO0042110], 1, sum))
