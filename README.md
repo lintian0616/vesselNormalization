@@ -8,7 +8,7 @@ File Name  | Description
 **data** folder | source data for the bioinformatic analysis
 **LungMetQuantify** folder  | [MATLAB](https://www.mathworks.com/) source code for lung macro-metastasis quantification
 **VesselQuantify** folder | [CellProfiler](http://cellprofiler.org/) pipelines for vessel density/length and co-localization quantifications
-**SUM_PCA** | compare ∑GPAGs − ∑PPAGs with the first principle component from Principle Component Analysis
+**SUM_PCA** folder | compare ∑GPAGs − ∑PPAGs with the first principle component from Principle Component Analysis
 **REVIGO_Plot** folder | source codes for summarizing GPAGs and PPAGs using [REVIGO](http://revigo.irb.hr/) plots
 **Fig1** folder | source codes for **Fig. 1a-i**
 **Fig4** folder | source codes for **Fig. 4a,b,j**
