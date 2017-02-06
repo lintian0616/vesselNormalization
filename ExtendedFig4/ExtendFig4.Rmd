@@ -1,0 +1,39 @@
+---
+title: "p53 null Murine Tumor"
+author: "Lin Tian"
+date: "2/6/2017"
+output: html_document
+---
+
+## Set working directory and load data
+
+```{r}
+setwd("~/vesselNormalization")
+load("~/vesselNormalization/data/p53null-tumors.RData")
+library(ggplot2)
+```
+
+## Extend Data Fig. 4f
+
+```{r}
+pnas2011.dt.clps <- pnas2011.dt.clps[, !grepl("FVB", pnas2011.ann$models)] ## remove FVB control samples
+pnas2011.ann <- pnas2011.ann[!grepl("FVB", pnas2011.ann$models), ] ## remove FVB control samples
+
+pnas2011.ann$SampleLabels <- NA
+pnas2011.ann$SampleLabels[pnas2011.ann$models=="T1-355-3"] <- "T1"
+pnas2011.ann$SampleLabels[pnas2011.ann$models=="T11-753R"] <- "T11"
+
+pnas2011.ann$CD4 <- as.numeric(pnas2011.dt.clps["Cd4", ])
+pnas2011.ann$CD8 <- as.numeric(pnas2011.dt.clps["Cd8a", ])
+pnas2011.ann$IFNg <- as.numeric(pnas2011.dt.clps["Ifng", ])
+
+ERkey <- c(NA, "Pos", "Neg", "Neg", "Neg", "Pos", "Neg", "Pos", "Neg")
+names(ERkey) <- names(table(pnas2011.ann$Era))
+pnas2011.ann$ERstatus <- ERkey[pnas2011.ann$Era]
+pnas2011.ann$ERstatus <- ifelse(is.na(pnas2011.ann$ERstatus), "NA", pnas2011.ann$ERstatus)
+
+fill_colours <- c(rev(c("#a50026", "#d73027", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#d9ef8b", "#a6d96a", "#66bd63", "#1a9850", "#006837")), rep("#a50026", 8))
+
+ggplot(data=pnas2011.ann, aes(x=CD4, y=IFNg))+geom_point(aes(fill=scale(CD8), colour=ERstatus), size=6, shape=21, alpha=0.8) + scale_fill_gradientn(colours=fill_colours) + scale_colour_manual(values=c("#000000","#542788", "#b35806")) + geom_text(hjust=0, vjust=0, aes(label=SampleLabels)) + theme_bw()+theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), legend.title=element_blank(), legend.text=element_text(colour="black", size = 10), legend.key=element_blank())+scale_y_continuous(breaks=seq(-5, 20, by=5), limits=c(-5.5, 20))+scale_x_continuous(breaks=seq(-2, 10, by=2), limits=c(-2, 10))+scale_size_area()+coord_fixed(ratio=0.5)
+```
+
