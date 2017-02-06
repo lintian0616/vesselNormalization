@@ -1,0 +1,146 @@
+---
+title: "Extended Data Fig. 1"
+author: "Lin Tian"
+date: "2/5/2017"
+output: html_document
+---
+
+## Load GSE51401 Dataset and R Packages
+
+```{r}
+setwd("~/vesselNormalization")
+load("~/vesselNormalization/data/gse51401.RData")
+load("~/vesselNormalization/data/gse20017.RData")
+load("~/vesselNormalization/data/GPAGs_PPAGs.RData") ## Load GPAGs and PPAGs
+source("https://raw.githubusercontent.com/lintian0616/tools/master/summarySE.R") ## Custom code for plotting error bars
+library(ggplot2)
+library(RColorBrewer)
+```
+
+## Compare GPAGs/PPAGs in and Normal Endothelial Cells (NEC) and Tumor Endothelial Cells (TEC)
+
+We shown that **GPAGs** can represent vessel normalization. If this is true, we should see higher GPAG signature in **NEC** than in that in **TEC**.
+
+We first select CD31+ **NEC** and CD31+ **TEC** samples.
+
+```{r}
+## CD31+ NEC
+CD31NEC <- rownames(gse51401.ann)[gse51401.ann$Marker=="CD31" & gse51401.ann$Type=="NEC"]
+CD31NEC.exp <- gse51401.exp.loess[, CD31NEC]
+GPAGsCD31NEC <- apply(CD31NEC.exp[GPAGs, ], 2, sum)
+PPAGsCD31NEC <- apply(CD31NEC.exp[PPAGs, ], 2, sum)
+combinedCD31NEC <- GPAGsCD31NEC - PPAGsCD31NEC
+
+## CD31+ TEC
+CD31TEC <- rownames(gse51401.ann)[gse51401.ann$Marker=="CD31" & gse51401.ann$Type=="TEC"]
+CD31TEC.exp <- gse51401.exp.loess[, CD31TEC]
+GPAGsCD31TEC <- apply(CD31TEC.exp[GPAGs, ], 2, sum)
+PPAGsCD31TEC <- apply(CD31TEC.exp[PPAGs, ], 2, sum)
+combinedCD31TEC <- GPAGsCD31TEC - PPAGsCD31TEC
+
+t.test(GPAGsCD31NEC, GPAGsCD31TEC, paired=TRUE)
+t.test(PPAGsCD31NEC, PPAGsCD31TEC, paired=TRUE)
+t.test(combinedCD31NEC, combinedCD31TEC, paired=TRUE)
+```
+
+### Extended Data Fig. 1b
+
+```{r}
+endothelial.df <- data.frame(GPAGsNEC=GPAGsCD31NEC, GPAGsTEC=GPAGsCD31TEC, PPAGsNEC=PPAGsCD31NEC, PPAGsTEC=PPAGsCD31TEC)
+rownames(endothelial.df) <- gse51401.ann[seq(1, 64, by=4), "Patient"]
+
+## GPAGs
+GPAGsCD31.df <- data.frame(sample=rep(rownames(endothelial.df),2), GPAGs=c(endothelial.df$GPAGsNEC, endothelial.df$GPAGsTEC), type=c(rep("CD31+NEC", 16), rep("CD31+TEC", 16)), CD31ID=rep(seq(1,16),2))
+GPAGsCD31_s <-summarySE(GPAGsCD31.df, measurevar="GPAGs", groupvars="type")
+t.test(GPAGs ~ type, data=GPAGsCD31.df, paired=TRUE)
+
+ggplot() + geom_point(data=GPAGsCD31.df, shape=21, size=4, alpha=0.8, aes(x=type, y=GPAGs, fill=sample)) + scale_fill_manual(values=c("#0a8a4b", "#b2e3f7", "#f6ec13", "#ed1f24", "#3953a4", "#f498c0", "#a53f97", "#af2824", "#d1d3d4", "#231f20", "#69bd45", "#fbb065", "#6479a2", "#925e1c", "#281d7b", "#4c5751")) + geom_line(data=GPAGsCD31.df, aes(x=type, y=GPAGs, colour=sample, group=sample)) + scale_colour_manual(values=c("#0a8a4b", "#b2e3f7", "#f6ec13", "#ed1f24", "#3953a4", "#f498c0", "#a53f97", "#af2824", "#d1d3d4", "#231f20", "#69bd45", "#fbb065", "#6479a2", "#925e1c", "#281d7b", "#4c5751")) + geom_errorbar(data=GPAGsCD31_s, aes(x=type, y=GPAGs, ymin=GPAGs-se, ymax=GPAGs+se), width=0.32)+ geom_boxplot(data=GPAGsCD31_s, aes(x=type, y=GPAGs), width=0.68, fill=NA) + scale_y_continuous(breaks=seq(300, 340, by=10), limits=c(290, 340))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.072)
+
+
+## PPAGs
+PPAGsCD31.df <- data.frame(sample=rep(rownames(endothelial.df),2), PPAGs=c(endothelial.df$PPAGsNEC, endothelial.df$PPAGsTEC), type=c(rep("CD31+NEC", 16), rep("CD31+TEC", 16)), CD31ID=rep(seq(1,16),2))
+PPAGsCD31_s <-summarySE(PPAGsCD31.df, measurevar="PPAGs", groupvars="type")
+t.test(PPAGs ~ type, data=PPAGsCD31.df, paired=TRUE)
+
+ggplot() + geom_point(data=PPAGsCD31.df, shape=21, size=4, alpha=0.8, aes(x=type, y=PPAGs, fill=sample)) + scale_fill_manual(values=c("#0a8a4b", "#b2e3f7", "#f6ec13", "#ed1f24", "#3953a4", "#f498c0", "#a53f97", "#af2824", "#d1d3d4", "#231f20", "#69bd45", "#fbb065", "#6479a2", "#925e1c", "#281d7b", "#4c5751")) + geom_line(data=PPAGsCD31.df, aes(x=type, y=PPAGs, colour=sample, group=sample)) + scale_colour_manual(values=c("#0a8a4b", "#b2e3f7", "#f6ec13", "#ed1f24", "#3953a4", "#f498c0", "#a53f97", "#af2824", "#d1d3d4", "#231f20", "#69bd45", "#fbb065", "#6479a2", "#925e1c", "#281d7b", "#4c5751")) + geom_errorbar(data=PPAGsCD31_s, aes(x=type, y=PPAGs, ymin=PPAGs-se, ymax=PPAGs+se), width=0.32)+ geom_boxplot(data=PPAGsCD31_s, aes(x=type, y=PPAGs), width=0.68, fill=NA) + scale_y_continuous(breaks=seq(230, 270, by=10), limits=c(230, 270))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.1)
+
+
+## Combined
+combinedCD31.df <- data.frame(sample=rep(rownames(endothelial.df),2), combinedAng=c(endothelial.df$GPAGsNEC-endothelial.df$PPAGsNEC, endothelial.df$GPAGsTEC-endothelial.df$PPAGsTEC), type=c(rep("CD31+NEC", 16), rep("CD31+TEC", 16)), CD31ID=rep(seq(1,16),2))
+combinedCD31_s <-summarySE(combinedCD31.df, measurevar="combinedAng", groupvars="type")
+t.test(combinedAng ~ type, data=combinedCD31.df, paired=TRUE)
+
+ggplot() + geom_point(data=combinedCD31.df, shape=21, size=4, alpha=0.8, aes(x=type, y=combinedAng, fill=sample)) + scale_fill_manual(values=c("#0a8a4b", "#b2e3f7", "#f6ec13", "#ed1f24", "#3953a4", "#f498c0", "#a53f97", "#af2824", "#d1d3d4", "#231f20", "#69bd45", "#fbb065", "#6479a2", "#925e1c", "#281d7b", "#4c5751")) + geom_line(data=combinedCD31.df, aes(x=type, y=combinedAng, colour=sample, group=sample)) + scale_colour_manual(values=c("#0a8a4b", "#b2e3f7", "#f6ec13", "#ed1f24", "#3953a4", "#f498c0", "#a53f97", "#af2824", "#d1d3d4", "#231f20", "#69bd45", "#fbb065", "#6479a2", "#925e1c", "#281d7b", "#4c5751")) + geom_errorbar(data=combinedCD31_s, aes(x=type, y=combinedAng, ymin=combinedAng-se, ymax=combinedAng+se), width=0.32)+ geom_boxplot(data=combinedCD31_s, aes(x=type, y=combinedAng), width=0.68, fill=NA) + scale_y_continuous(breaks=seq(50, 100, by=10), limits=c(48, 100))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.068)
+```
+
+
+## Compare GPAGs/PPAGs in Tumor with or without Vascular Invasion (Extended Data Fig. 1c)
+
+```{r}
+goodAng <- goodAng[goodAng %in% rownames(HCC.exp)]
+badAng <- badAng[badAng %in% rownames(HCC.exp)]
+
+GPAGs_vi <- apply(HCC.exp[GPAGs[GPAGs %in% rownames(HCC.exp)], ], 2, sum) ## vi: vascular invasion
+PPAGs_vi <- apply(HCC.exp[PPAGs[PPAGs %in% rownames(HCC.exp)], ], 2, sum)
+combined_vi <- GPAGs_vi - PPAGs_vi
+
+vi.df <- data.frame(GPAGs=GPAGs_vi, PPAGs=PPAGs_vi, combined=combined_vi, invasion=HCC.ann$vascular_invasion)
+
+
+## GPAGs
+wilcox.test(vi.df$GPAGs ~ vi.df$invasion)
+ggplot(vi.df, aes(x=invasion, y=scale(GPAGs)))+scale_colour_manual(values = c("#E41A1C","#377EB8"))+geom_point(aes(colour=invasion), size=2, position="jitter")+geom_boxplot(alpha=0, outlier.size=NA)+scale_y_continuous(breaks=seq(-2, 4, by=2), limits=c(-2, 4))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.68)
+
+
+## PPAGs
+wilcox.test(vi.df$PPAGs ~ vi.df$invasion)
+ggplot(vi.df, aes(x=invasion, y=scale(PPAGs)))+scale_colour_manual(values = c("#E41A1C","#377EB8"))+geom_point(aes(colour=invasion), size=2, position="jitter")+geom_boxplot(alpha=0, outlier.size=NA)+scale_y_continuous(breaks=seq(-3, 3, by=2), limits=c(-3, 3))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.68)
+
+
+## Combined
+wilcox.test(vi.df$combined ~ vi.df$invasion)
+ggplot(vi.df, aes(x=invasion, y=scale(combined)))+scale_colour_manual(values = c("#E41A1C","#377EB8"))+geom_point(aes(colour=invasion), size=2, position="jitter")+geom_boxplot(alpha=0, outlier.size=NA)+scale_y_continuous(breaks=seq(-4, 4, by=2), limits=c(-4, 4))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.56)
+```
+
+## Gene Set Enrichment Analysis for Correlated Pathways in TC (non-TECs) (Extended Data Fig. 1d,e)
+
+### Gene Expression Data
+
+The gene expression data is from non-Tumor Endothelial Cells (non-TEC or called TC in the dataset).
+
+```{r}
+TC.GSEA <- gse51401.exp.mednorm[, rownames(gse51401.ann)[gse51401.ann$Type=="TC"]]
+TC.GSEA <- cbind(rownames(TC.GSEA), rep(NA, nrow(TC.GSEA)), TC.GSEA)
+TC.GSEA <- rbind(c("#1.2", rep("", ncol(TC.GSEA)-1)), c(nrow(TC.GSEA), ncol(TC.GSEA)-2, rep("", ncol(TC.GSEA)-2)), c("NAME", "Description", colnames(TC.GSEA)[c(-1, -2)]), TC.GSEA)
+write.table(TC.GSEA, file="~/GSE51401_TC_mednorm.gct", row.names=FALSE, col.names=FALSE, sep="\t", quote=FALSE)
+```
+
+## Phenotype Data
+
+The phenotype data is GPAGs/PPAGs/combined in CD31+ tumor endothelial cells.
+
+```{r}
+CD31TEC <- rownames(gse51401.ann)[gse51401.ann$Marker=="CD31" & gse51401.ann$Type=="TEC" & gse51401.ann$Patient %in% gse51401.ann[rownames(gse51401.ann)[gse51401.ann$Type=="TC"], "Patient"]]
+CD31TEC.exp <- gse51401.exp.mednorm[, CD31TEC]
+GPAGsCD31TEC <- apply(CD31TEC.exp[GPAGs, ], 2, sum)
+PPAGsCD31TEC <- apply(CD31TEC.exp[PPAGs, ], 2, sum)
+combinedCD31TEC <- GPAGsCD31TEC - PPAGsCD31TEC
+```
+
+We need check the patient ID of TC and TEC are same, so that we can do the paired/parallel comparison.
+
+```{r}
+all.equal(gse51401.ann[colnames(TC.GSEA)[-c(1,2)], "Patient"], gse51401.ann[colnames(CD31TEC.exp), "Patient"])
+
+CD31TEC.cls <- matrix("", nrow=7, ncol=ncol(TC.GSEA)-2)
+CD31TEC.cls[1, 1] <- "#numeric"
+CD31TEC.cls[2, 1] <- "#goodAngCD31TEC_mednorm" ## for GPAG signature
+CD31TEC.cls[3, ] <- GPAGsCD31TEC
+CD31TEC.cls[4, 1] <- "#badAngCD31TEC_mednorm" ## for PPAG signature
+CD31TEC.cls[5, ] <- PPAGsCD31TEC
+CD31TEC.cls[6, 1] <- "#combinedAngCD31TEC_mednorm" ## for combined
+CD31TEC.cls[7, ] <- combinedCD31TEC
+write.table(CD31TEC.cls, file="~/GSE51401_CD31TECforTC_mednorm.cls", row.names=FALSE, col.names=FALSE, sep=" ", quote=FALSE)
+```
+
+The `GSE51401_TC_mednorm.gct` and `GSE51401_CD31TECforTC_mednorm.cls` are used as input for GSEA running un [GenePattern](https://genepattern.broadinstitute.org/gp/pages/login.jsf).
