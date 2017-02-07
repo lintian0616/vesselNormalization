@@ -32,3 +32,5 @@ The quantification source data are saved as **ImageSimulation.xlsx** in `vesselN
 * **Cy2** sheet: the minimum distance between tdRed+;CFSE+ CD4+ naïve T cells and lectin+ vessel. Since there is very limited number (6 in all), this distance is calculated manually.
 * **Cy3** sheet: the localization of tdRed+ stimulated/activated CD4+ T cells. This is automatically quantified by imageJ.
 * **Cy5** sheet: the localization of lectin+ endothelial cells. This is automatically quantified by imageJ.
+
+**ExtendedFig9.Rmd** is the source code for **Extended Data Fig. 9c,d**.
