@@ -74,6 +74,8 @@ ggplot() + geom_hline(yintercept=mean(CFSE_ch$minDistLectin)/3, colour="#252525"
 
 We perform 10,000 times of simulation for each sample. In each round of simulation, the number of simulated random dots is same with the real number of CD4+ T cells.
 
+Be cautious, we are using 2GHz CPU and 2GB RAM space instance, and it took us ~10 hours to run the chuck below 
+
 ```{r}
 simulatedDist <- matrix(NA, nrow=length(paste0("S", 1:5)), ncol=10000)
 rownames(simulatedDist) <- paste0("S", 1:5)
@@ -98,50 +100,60 @@ for(s in paste0("S", 1:5)) {
     simulatedDist[s, i] <- mean(tdRed_cells_dist)
   }
 }
+save(CFSE_ch, tdRed_ch2, simulatedDist, file="SimulatedDistance.RData")
 ```
+
+If you do not want to wait, we have save the results in `vesselNormalization/data`. And you can just go to next code chunk to load the data.
+
+```{r}
+save(CFSE_ch, tdRed_ch2, simulatedDist, file="~/vesselNormalization/data/SimulatedDistance.RData")
+```
+
 
 ## Plot Histogram (Extended Data Fig. 9d)
 
 ```{r}
+load("~/vesselNormalization/data/SimulatedDistance.RData")
+
 library(ggplot2)
 
 ## S1
 S1_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S1"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S1")[, "minLen"]), as.numeric(simulatedDist[1, ]))/3) ### Unit of minDist: um
 
 ggplot(data=S1_df) + geom_histogram(data=subset(S1_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#fb9a99", colour=NA, alpha=0.68)  + geom_density(data=subset(S1_df, type=="Real"), aes(x=minDist), colour="#e31a1c") + geom_density(data=subset(S1_df, type=="Stimulated"), aes(x=minDist), colour="#e31a1c", linetype=2) + geom_vline(xintercept = mean(subset(S1_df, type=="Real")[, "minDist"]), colour="#e31a1c") + scale_y_continuous(breaks=seq(0, 0.05, by=0.01), limits=c(0, 0.05), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=1000)
-
-sum(mean(subset(S1_df, type=="Real")[, "minDist"]) > subset(S1_df, type=="Stimulated")[, "minDist"])
+### p value
+sum(mean(subset(S1_df, type=="Real")[, "minDist"]) > subset(S1_df, type=="Stimulated")[, "minDist"]) / length(subset(S1_df, type=="Stimulated")[, "minDist"])
 
 
 ## S2
 S2_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S2"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S2")[, "minLen"]), as.numeric(simulatedDist[2, ]))/3) ### Unit of minDist: um
 
 ggplot(data=S2_df) + geom_histogram(data=subset(S2_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#fdbf6f", colour=NA, alpha=0.68)  + geom_density(data=subset(S2_df, type=="Real"), aes(x=minDist), colour="#ff7f00") + geom_density(data=subset(S2_df, type=="Stimulated"), aes(x=minDist), colour="#ff7f00", linetype=2) + geom_vline(xintercept = mean(subset(S2_df, type=="Real")[, "minDist"]), colour="#ff7f00") + scale_y_continuous(breaks=seq(0, 0.06, by=0.02), limits=c(0, 0.06), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=1200)
-
-sum(mean(subset(S2_df, type=="Real")[, "minDist"]) > subset(S2_df, type=="Stimulated")[, "minDist"])
+### p value
+sum(mean(subset(S2_df, type=="Real")[, "minDist"]) > subset(S2_df, type=="Stimulated")[, "minDist"]) / length(subset(S2_df, type=="Stimulated")[, "minDist"])
 
 
 ## S3
 S3_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S3"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S3")[, "minLen"]), as.numeric(simulatedDist[3, ]))/3) ### Unit of minDist: um
 
 ggplot(data=S3_df) + geom_histogram(data=subset(S3_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#b2df8a", colour=NA, alpha=0.68)  + geom_density(data=subset(S3_df, type=="Real"), aes(x=minDist), colour="#33a02c") + geom_density(data=subset(S3_df, type=="Stimulated"), aes(x=minDist), colour="#33a02c", linetype=2) + geom_vline(xintercept = mean(subset(S3_df, type=="Real")[, "minDist"]), colour="#33a02c") + scale_y_continuous(breaks=seq(0, 0.10, by=0.02), limits=c(0, 0.10), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=750)
-
-sum(mean(subset(S3_df, type=="Real")[, "minDist"]) > subset(S3_df, type=="Stimulated")[, "minDist"])
+### p value
+sum(mean(subset(S3_df, type=="Real")[, "minDist"]) > subset(S3_df, type=="Stimulated")[, "minDist"]) / length(subset(S3_df, type=="Stimulated")[, "minDist"])
 
 
 ## S4
 S4_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S4"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S4")[, "minLen"]), as.numeric(simulatedDist[4, ]))/3) ### Unit of minDist: um
 
 ggplot(data=S4_df) + geom_histogram(data=subset(S4_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#a6cee3", colour=NA, alpha=0.68)  + geom_density(data=subset(S4_df, type=="Real"), aes(x=minDist), colour="#1f78b4") + geom_density(data=subset(S4_df, type=="Stimulated"), aes(x=minDist), colour="#1f78b4", linetype=2) + geom_vline(xintercept = mean(subset(S4_df, type=="Real")[, "minDist"]), colour="#1f78b4") + scale_y_continuous(breaks=seq(0, 0.03, by=0.01), limits=c(0, 0.03), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=3000)
-
-sum(mean(subset(S4_df, type=="Real")[, "minDist"]) > subset(S4_df, type=="Stimulated")[, "minDist"])
+### p value
+sum(mean(subset(S4_df, type=="Real")[, "minDist"]) > subset(S4_df, type=="Stimulated")[, "minDist"]) / length(subset(S4_df, type=="Stimulated")[, "minDist"])
 
 
 ## S5
 S5_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S5"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S5")[, "minLen"]), as.numeric(simulatedDist[5, ]))/3) ### Unit of minDist: um
 
 ggplot(data=S5_df) + geom_histogram(data=subset(S5_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#cab2d6", colour=NA, alpha=0.68)  + geom_density(data=subset(S5_df, type=="Real"), aes(x=minDist), colour="#6a3d9a") + geom_density(data=subset(S5_df, type=="Stimulated"), aes(x=minDist), colour="#6a3d9a", linetype=2) + geom_vline(xintercept = mean(subset(S5_df, type=="Real")[, "minDist"]), colour="#6a3d9a") + scale_y_continuous(breaks=seq(0, 0.03, by=0.01), limits=c(0, 0.03), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=2000)
-
-sum(mean(subset(S5_df, type=="Real")[, "minDist"]) > subset(S5_df, type=="Stimulated")[, "minDist"])
+### p value
+sum(mean(subset(S5_df, type=="Real")[, "minDist"]) > subset(S5_df, type=="Stimulated")[, "minDist"]) / length(subset(S5_df, type=="Stimulated")[, "minDist"])
 ```
 
