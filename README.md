@@ -17,7 +17,9 @@ File Name  | Description
 **ExtendedFig8** folder | source codes for **Extended Data Fig. 8b-h**
 **ExtendedFig9** folder | source codes for **Extended Data Fig. 9c,d**
 
-We want to thank the following bioinformatic resources for their support on our research.
+
+
+We thank the following bioinformatic resources for their support on our research.
 
 * [CyVerse](http://www.cyverse.org/) provides us with computational systems for bioinformatic analysis. All the R programming codes were run on the instance called **Data Mining for Cancer Biology**.
 * [GenePattern](https://genepattern.broadinstitute.org/) allows us perform all the Gene Set Enrichment Analysis (**GSEA**) and single sample GSEA projection (**ssGSEA**).
