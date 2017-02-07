@@ -38,6 +38,8 @@ Because the [GSEA](http://software.broadinstitute.org/gsea/index.jsp) MSigdb onl
 
 We can use curated mouse version Gene Ontology Biological Process Gene Set database from [Bader Lab's GeneSets](http://baderlab.org/GeneSets). Go to their [FTP portal](http://download.baderlab.org/EM_Genesets/). In the manuscript, we use the **Mouse_GOBP_AllPathways_no_GO_iea_May_24_2015_symbol.gmt** of [May_24_2015/](http://download.baderlab.org/EM_Genesets/May_24_2015/Mouse/symbol/) version.
 
+Since this GSEA output file is more than 100MB, we deposited the result to [figshare](https://figshare.com/), which can be downloaded from this [link](https://figshare.com/articles/GSEA_Output_for_RNA-seq_Experiments/4625134).
+
 ## Other Souece Codes
 
 The souece codes for **Extended Data Fig. 8b-h** can be found in **ExtendedFig8.Rmd**.
