@@ -1,7 +1,7 @@
 Type 1 T helper cells promote tumour vessel normalization and mitigate hypoxia
 ======
 
-This repository contains the source data and source codes for bioinformatic analysis. The manuscript is currently reviewed by [Nature](http://www.nature.com/).
+This repository contains the source data and source codes for bioinformatic analysis. The manuscript is under revision.
 
 File Name  | Description
 ------------- | -------------
