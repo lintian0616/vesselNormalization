@@ -1,0 +1,289 @@
+---
+title: "PDX Microarray Data Process"
+author: "Lin Tian"
+date: "2/7/2017"
+output: html_document
+---
+
+## Load Hypoxia Gene Signature
+
+```{r}
+setwd("~/Figure6")
+library(GEOquery)
+library(limma)
+library(biomaRt)
+load("hypoxia.RData")
+hypoxia <- unique(c(hypo1, hypo2, pimo, vegf))
+ensembl <- useMart("ensembl")
+ensembl <- useDataset("hsapiens_gene_ensembl",mart=ensembl)
+```
+
+
+## Bladder Dataset
+
+```
+## Download Sample Information
+wget https://www.ebi.ac.uk/arrayexpress/files/E-GEOD-67312/E-GEOD-67312.sdrf.txt
+
+# Download Expression Data
+wget https://www.ebi.ac.uk/arrayexpress/files/E-GEOD-67312/E-GEOD-67312.processed.1.zip
+unzip E-GEOD-67312.processed.1.zip
+rm E-GEOD-67312.processed.1.zip
+```
+
+```{r}
+setwd("~/Figure6")
+path <- "./GSE67312"
+sample_tables <- list.files(path=path,pattern="*sample_table.txt",full.names=TRUE)
+sample_names <- sub("./GSE67312/(.*)_sample_table.txt", "\\1", sample_tables)
+sampleAnnotation <- read.table("./GSE67312/E-GEOD-67312.sdrf.txt", header=TRUE, as.is=TRUE, sep="\t", quote="")
+sampleAnnotation$Source.Name <- sub(" 1", "", sampleAnnotation$Source.Name)
+sampleAnnotation <- sampleAnnotation[, c("Source.Name", "Comment..Sample_source_name.", "Comment..Sample_title.", "Characteristics..pathological.stage.")]
+colnames(sampleAnnotation) <- c("Name", "Type", "ID", "PathologyStage")
+sampleAnnotation$ID <- substr(sampleAnnotation$ID, nchar(sampleAnnotation$ID), nchar(sampleAnnotation$ID))
+sampleAnnotation <- sampleAnnotation[order(sampleAnnotation$Name), ]
+
+template.probe <- read.table("./GSE67312/GSM1644589_sample_table.txt", header=TRUE, as.is=TRUE, sep="\t", row.names=1)
+sample.probe <- matrix(NA, nrow=nrow(template.probe), ncol=length(sample_names))
+rownames(sample.probe) <- rownames(template.probe)
+colnames(sample.probe) <- sample_names
+for(i in seq(length(sample_names))) {
+  n.probe <- read.table(sample_tables[i], header=TRUE, as.is=TRUE, sep="\t", row.names=1)
+  sample.probe[, sample_names[i]] <- n.probe[rownames(sample.probe), "VALUE"]
+}
+map <- getBM(mart=ensembl, attributes=c("affy_huex_1_0_st_v2", "hgnc_symbol"), filters="affy_huex_1_0_st_v2", values=rownames(sample.probe))
+map$affy_huex_1_0_st_v2 <- as.character(map$affy_huex_1_0_st_v2)
+map <- map[map$hgnc_symbol!="", ]
+map <- map[!duplicated(map$affy_huex_1_0_st_v2), ]
+sample.probe <- sample.probe[rownames(sample.probe) %in% map$affy_huex_1_0_st_v2, ]
+map <- map[map$affy_huex_1_0_st_v2 %in% rownames(sample.probe), ]
+
+genenames <- hypoxia[hypoxia %in% map$hgnc_symbol]
+GSE67312.exp <- matrix(NA, nrow=length(genenames), ncol=ncol(sample.probe))
+rownames(GSE67312.exp) <- genenames
+colnames(GSE67312.exp) <- colnames(sample.probe)
+for(g in genenames) {
+  probes <- map$affy_huex_1_0_st_v2[map$hgnc_symbol==g]
+  if(length(probes)==1) {
+    GSE67312.exp[g, ] <- as.numeric(sample.probe[probes, ])
+  }
+  else{
+    GSE67312.exp[g, ] <- apply(sample.probe[probes, ], 2, mean)
+  }
+}
+GSE67312.ann <- sampleAnnotation
+```
+
+## Breast Dataset
+
+For the breast cancer paired comparison, we merged two datasets([GSE32531](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE32531) and [GSE41685](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE41685)) using same microarray platform. However, since the data were from two different labs/batches, we use used `normalizeBetweenArrays` to normalize the two datasets.
+
+```{r}
+setwd("~/Figure6/GSE32531_GSE41685/")
+GSE32531 <- getGEO(GEO="GSE32531", destdir=getwd())
+eset32531 <- GSE32531[[1]]
+dat32531 <- exprs(eset32531)
+Info32531 <- pData(eset32531)
+Info32531 <- Info32531[, c("geo_accession", "characteristics_ch1.5", "characteristics_ch1.6", "characteristics_ch1.7")]
+colnames(Info32531) <- c("Name", "ID", "Type", "Site")
+Info32531$ID <- sub("tumor id: ", "", Info32531$ID)
+Info32531$Type <- sub("sample type: ", "", Info32531$Type)
+Info32531$Type <- ifelse(Info32531$Type=="original tumor", Info32531$Type, paste0("xenograft passage", sub("xenograft (.).*", "\\1", Info32531$Type)))
+Info32531$Site <- sub("tissue: ", "", Info32531$Site)
+
+GSE41685 <- getGEO(GEO="GSE41685", destdir=getwd())
+eset41685 <- GSE41685[[1]]
+dat41685 <- exprs(eset41685)
+Info41685 <- pData(eset41685)
+Info41685 <- Info41685[, c("geo_accession", "source_name_ch2")]
+Info41685$Site <- sub("(.*)_him.*", "\\1", Info41685[, "source_name_ch2"])
+Info41685$Site <- sub("(.*), W.*", "\\1", Info41685$Site)
+Info41685$Site <- ifelse(Info41685$Site=="primary breast tumor", "primary breast tumor", "metastatic breast cancer tumor")
+Info41685$ID <- paste0("w", sub("primary.*_(.*)_.*", "\\1", Info41685[, "source_name_ch2"]))
+Info41685$ID <- sub("wprimary breast tumor, (.*),.*", "\\1", Info41685$ID)
+Info41685$Type <- sub(".*_.*_(.*)", "\\1", Info41685[, "source_name_ch2"])
+Info41685$Type <- sub(".*,.*, (.*)", "\\1", Info41685$Type)
+Info41685$Type <- ifelse(Info41685$Type=="human counterpart", "original tumor", Info41685$Type)
+Info41685 <- Info41685[, c("geo_accession", "ID", "Type", "Site")]
+colnames(Info41685) <- c("Name", "ID", "Type", "Site")
+
+all.equal(rownames(dat32531), rownames(dat41685))
+combine.mn <- cbind(dat32531, dat41685)
+combine.mn <- normalizeBetweenArrays(combine.mn, method="quantile")
+combine.ann <- rbind(Info32531, Info41685)
+map <- getBM(mart=ensembl, attributes=c("efg_agilent_wholegenome_4x44k_v1", "hgnc_symbol"), filters="efg_agilent_wholegenome_4x44k_v1", values=rownames(combine.mn))
+map <- map[map$hgnc_symbol!="", ]
+combine.mn <- combine.mn[rownames(combine.mn) %in% map$efg_agilent_wholegenome_4x44k_v1, ]
+ambiguous <- sapply(rownames(combine.mn), function(x) length(unique(map$hgnc_symbol[map$efg_agilent_wholegenome_4x44k_v1==x]))>1)
+combine.mn <- combine.mn[!ambiguous, ]
+
+genenames <- hypoxia[hypoxia %in% map$hgnc_symbol]
+combine.exp <- matrix(NA, nrow=length(genenames), ncol=ncol(combine.mn))
+rownames(combine.exp) <- genenames
+colnames(combine.exp) <- colnames(combine.mn)
+map <- map[map$efg_agilent_wholegenome_4x44k_v1 %in% rownames(combine.mn), ]
+for(g in genenames) {
+  probes <- as.character(map$efg_agilent_wholegenome_4x44k_v1[map$hgnc_symbol==g])
+  if(length(probes)==1) {
+    combine.exp[g, ] <- combine.mn[probes, ]
+  }
+  else{
+    combine.exp[g, ] <- apply(combine.mn[probes, ], 2, mean)
+  }
+}
+```
+
+## Liver Cancer
+
+```
+## Download Sample Information
+wget https://www.ebi.ac.uk/arrayexpress/files/E-GEOD-55828/E-GEOD-55828.sdrf.txt
+
+# Download Expression Data
+wget https://www.ebi.ac.uk/arrayexpress/files/E-GEOD-55828/E-GEOD-55828.processed.1.zip
+unzip E-GEOD-55828.processed.1.zip
+rm E-GEOD-55828.processed.1.zip
+```
+
+```{r}
+setwd("~/Figure6")
+path <- "./GSE55828"
+sample_tables <- list.files(path=path,pattern="*sample_table.txt",full.names=TRUE)
+sample_names <- sub(".+GSE55828/(.*)_sample_table.txt", "\\1", sample_tables)
+sampleAnnotation <- read.table("./GSE55828/E-GEOD-55828.sdrf.txt", header=TRUE, as.is=TRUE, sep="\t", quote="")
+sampleAnnotation$Source.Name <- sub(" 1", "", sampleAnnotation$Source.Name)
+sampleAnnotation <- sampleAnnotation[, c("Source.Name", "Comment..Sample_title.", "Characteristics..sample.type.")]
+colnames(sampleAnnotation) <- c("Name", "ID", "Type")
+sampleAnnotation$ID <- sub(".+model ID ", "", sampleAnnotation$ID)
+sampleAnnotation <- sampleAnnotation[order(sampleAnnotation$Name), ]
+
+template.probe <- read.table("./GSE55828/GSM1346697_sample_table.txt", header=TRUE, as.is=TRUE, sep="\t", row.names=1)
+sample.probe <- matrix(NA, nrow=nrow(template.probe), ncol=length(sample_names))
+rownames(sample.probe) <- rownames(template.probe)
+colnames(sample.probe) <- sample_names
+for(i in seq(length(sample_names))) {
+  n.probe <- read.table(sample_tables[i], header=TRUE, as.is=TRUE, sep="\t", row.names=1)
+  sample.probe[, sample_names[i]] <- n.probe[rownames(sample.probe), "VALUE"]
+}
+
+map <- getBM(mart=ensembl, attributes=c("affy_primeview", "hgnc_symbol"), filters="affy_primeview", values=rownames(sample.probe))
+map <- map[map$hgnc_symbol!="", ]
+sample.probe <- sample.probe[rownames(sample.probe) %in% map$affy_primeview, ]
+ambiguous <- sapply(rownames(sample.probe), function(x) length(unique(map$hgnc_symbol[map$affy_primeview==x]))>1)
+sample.probe <- sample.probe[!ambiguous, ]
+
+genenames <- hypoxia[hypoxia %in% map$hgnc_symbol]
+sample.gene <- matrix(NA, nrow=length(genenames), ncol=ncol(sample.probe))
+rownames(sample.gene) <- genenames
+colnames(sample.gene) <- colnames(sample.probe)
+map <- map[map$affy_primeview %in% rownames(sample.probe), ]
+for(g in genenames) {
+  probes <- as.character(map$affy_primeview[map$hgnc_symbol==g])
+  if(length(probes)==1) {
+    sample.gene[g, ] <- sample.probe[probes, ]
+  }
+  else{
+    sample.gene[g, ] <- apply(sample.probe[probes, ], 2, mean)
+  }
+}
+
+gse55828.ann <- sampleAnnotation
+gse55828.exp <- sample.gene
+```
+
+## Ovarian Cancer
+
+```
+## Download Sample Information
+wget https://www.ebi.ac.uk/arrayexpress/files/E-GEOD-56920/E-GEOD-56920.sdrf.txt
+
+# Download Expression Data
+wget https://www.ebi.ac.uk/arrayexpress/files/E-GEOD-56920/E-GEOD-56920.processed.1.zip
+unzip E-GEOD-56920.processed.1.zip
+rm E-GEOD-56920.processed.1.zip
+```
+
+```{r}
+setwd("~/Figure6")
+path <- "./GSE56920"
+sample_tables <- list.files(path=path,pattern="*sample_table.txt",full.names=TRUE)
+sample_names <- sub(".+GSE56920/(.*)_sample_table.txt", "\\1", sample_tables)
+sampleAnnotation <- read.table("./GSE56920/E-GEOD-56920.sdrf.txt", header=TRUE, as.is=TRUE, sep="\t", quote="")
+sampleAnnotation$Source.Name <- sub(" 1", "", sampleAnnotation$Source.Name)
+sampleAnnotation <- sampleAnnotation[, c("Source.Name", "Comment..Sample_title.", "Characteristics..organism.part.")]
+colnames(sampleAnnotation) <- c("Name", "ID", "Type")
+sampleAnnotation <- sampleAnnotation[order(sampleAnnotation$Name), ]
+
+template.probe <- read.table("./GSE56920/GSM1371278_sample_table.txt", header=TRUE, as.is=TRUE, sep="\t", row.names=1)
+sample.probe <- matrix(NA, nrow=nrow(template.probe), ncol=length(sample_names))
+rownames(sample.probe) <- rownames(template.probe)
+colnames(sample.probe) <- sample_names
+for(i in seq(length(sample_names))) {
+  n.probe <- read.table(sample_tables[i], header=TRUE, as.is=TRUE, sep="\t", row.names=1)
+  sample.probe[, sample_names[i]] <- n.probe[rownames(sample.probe), "VALUE"]
+}
+
+map <- getBM(mart=ensembl, attributes=c("efg_agilent_sureprint_g3_ge_8x60k_v2", "hgnc_symbol"), filters="efg_agilent_sureprint_g3_ge_8x60k_v2", values=rownames(sample.probe))
+map <- map[map$hgnc_symbol!="", ]
+sample.probe <- sample.probe[rownames(sample.probe) %in% map$efg_agilent_sureprint_g3_ge_8x60k_v2, ]
+ambiguous <- sapply(rownames(sample.probe), function(x) length(unique(map$hgnc_symbol[map$efg_agilent_sureprint_g3_ge_8x60k_v2==x]))>1)
+sample.probe <- sample.probe[!ambiguous, ]
+sample.probe <- na.omit(sample.probe)
+
+genenames <- hypoxia[hypoxia %in% map$hgnc_symbol]
+sample.gene <- matrix(NA, nrow=length(genenames), ncol=ncol(sample.probe))
+rownames(sample.gene) <- genenames
+colnames(sample.gene) <- colnames(sample.probe)
+map <- map[map$efg_agilent_sureprint_g3_ge_8x60k_v2 %in% rownames(sample.probe), ]
+for(g in genenames) {
+  probes <- as.character(map$efg_agilent_sureprint_g3_ge_8x60k_v2[map$hgnc_symbol==g])
+  if(length(probes)==1) {
+    sample.gene[g, ] <- sample.probe[probes, ]
+  }
+  else{
+    sample.gene[g, ] <- apply(sample.probe[probes, ], 2, mean)
+  }
+}
+
+gse56920.ann <- sampleAnnotation
+gse56920.exp <- sample.gene
+```
+
+## Breast Cancer (Mike Lewis's Unpaired)
+
+```{r}
+gse34412 <- getGEO(GEO="GSE34412", destdir=getwd())
+eset34412 <- gse34412[[1]]
+dat34412 <- exprs(eset34412)
+Info34412 <- pData(eset34412)
+Info34412 <- Info34412[, c("geo_accession", "title", "description")]
+colnames(Info34412) <- c("Name", "ID", "Type")
+probe <- fData(eset34412)
+removeRows <- probe$`Blast Gene Symbol`==""
+dat34412 <- dat34412[!removeRows, ]
+probe <- probe[!removeRows, ]
+
+genenames <- hypoxia[hypoxia %in% as.character(unique(probe$`Blast Gene Symbol`))]
+gse34412.exp <- matrix(NA, nrow=length(genenames), ncol=ncol(dat34412))
+rownames(gse34412.exp) <- genenames
+colnames(gse34412.exp) <- colnames(dat34412)
+for(g in genenames) {
+  probes <- probe$`Blast Gene Symbol`==g
+  if(sum(probes)==1) {
+    gse34412.exp[g, ] <- dat34412[probes, ]
+  }
+  else{
+    gse34412.exp[g, ] <- apply(dat34412[probes, ], 2, mean)
+  }
+}
+gse34412.ann <- Info34412
+```
+
+
+## Save objects
+
+```{r}
+setwd("~/Figure6")
+save(GSE67312.ann, GSE67312.exp, combine.ann, combine.exp, gse55828.ann, gse55828.exp, gse56920.ann, gse56920.exp, gse34412.ann, gse34412.exp, file="PDX.Hypoxia.RData")
+```
+
