@@ -1,0 +1,103 @@
+---
+title: "RNA-seq Data Normalization"
+author: "Lin Tian"
+date: "2/6/2017"
+output: html_document
+---
+
+## Data Download
+
+Go to [GSE89758]( https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?token=onstcsssvxolxmd&acc=GSE89758), and download **RSEM** read counting files (end with **_RSEM.genes.results**). Save these counting files to a folder called `RNAseqProcessedData`.
+
+We will remove one sample (**CD4KO_9768**), because this was shown to be an outlier and was removed before proceeding to downstream analysis. An outlier is defined as a number that is more than 1.5 times the inter-quartile range away from either the lower or upper quartiles. Speciﬁcally, if a number is less than `Q1 - 1.5×IQR` or greater than `Q3 + 1.5×IQR`, then it is an outlier.
+
+```
+## Go to the folder contains the read counting files
+cd ~/vesselNormalization/data/RNAseqProcessedData/
+rm CD4KO_9768_RSEM.genes.results
+## Merge individual read counting files
+rsem-generate-data-matrix *_RSEM.genes.results > VN.txt
+mv VN.txt ~/vesselNormalization/data
+```
+
+We then read the counting matrix into R.
+
+```{r}
+setwd("~/vesselNormalization/ExtendedFig8")
+VN_count <- read.table("~/vesselNormalization/data/VN.txt", header=TRUE, sep="\t", row.names=1)
+colnames(VN_count) <- c("CD4KO_9769", "CD4KO_9770", "CD8KO_9751", "CD8KO_9752", "CD8KO_9753", "TCRKO_9765", "TCRKO_9766", "TCRKO_9767", "Tie2Cre_9501", "Tie2Cre_9502", "Tie2Cre_9504", "Tie2Cre_H2Abf_9576", "Tie2Cre_H2Abf_9582", "Tie2Cre_H2Abf_9583", "Tie2Cre_H2Abf_9589", "WT_9748", "WT_9749", "WT_9771", "WT_9772")
+strain <- sub("_[[:digit:]]+", "", colnames(VN_count))
+VN.ann <- data.frame(strain, CD4KO=strain %in% c("CD4KO", "TCRKO"), CD8KO=strain %in% c("CD8KO", "TCRKO"), CD4TActivity=!(strain %in% c("CD4KO", "TCRKO", "Tie2Cre_H2Abf")))
+rownames(VN.ann) <- colnames(VN_count)
+```
+
+## Normalization Using [DEseq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)
+
+```{r}
+library(DESeq2)
+library(genefilter)
+VN.dds <- DESeqDataSetFromMatrix(round(data.matrix(VN_count)), colData=VN.ann, design=~ CD4TActivity)
+VN_gene.dds <- DESeq(VN.dds)
+sizeFactors(VN_gene.dds) ## This is the read coverage/sequence depth for each sample
+VN.ann$sizeFactors <- sizeFactors(VN_gene.dds)
+rld_gene <- rlog(VN_gene.dds) ## We use regularized log transformation (rld)
+VN.rld <- assay(rld_gene)
+```
+
+## Collapse Ensembl ID to Mouse Gene Symbols
+
+```{r}
+library(biomaRt)
+ensembl <- useMart("ENSEMBL_MART_ENSEMBL", host="www.ensembl.org")
+ensembl <- useDataset("mmusculus_gene_ensembl",mart=ensembl)
+map <- getBM(mart=ensembl, attributes=c("ensembl_gene_id", "mgi_symbol"), filters="ensembl_gene_id", values=rownames(VN.rld))
+map <- map[map$mgi_symbol!="", ]
+genenames <- unique(map$mgi_symbol[map$ensembl_gene_id %in% rownames(VN.rld)])
+
+VN.gene <- matrix(NA, nrow=length(genenames), ncol=ncol(VN.rld))
+rownames(VN.gene) <- genenames
+colnames(VN.gene) <- rownames(VN.ann)
+
+for(g in genenames) {
+  p <- as.character(map$ensembl_gene_id[map$mgi_symbol==g])
+  if(length(p)==1) {
+    VN.gene[g, ] <- VN.rld[p, ]
+  }
+  else{
+    VN.gene[g, ] <- apply(VN.rld[p, ], 2, max)
+  }
+}
+```
+
+## Collapse Ensembl ID to Human Ortholog Gene Symbols
+
+As we will perform [ssGSEA](http://www.nature.com/nature/journal/v462/n7269/full/nature08460.html) analysis, it is better to convert the mouse Ensembl Gene ID to human ortholog gene symbol as the [curated KEGG database](http://software.broadinstitute.org/gsea/msigdb/collections.jsp) only support human gene symbol.
+
+```{r}
+map2 <- getBM(mart=ensembl, attributes=c("ensembl_gene_id", "hsapiens_homolog_ensembl_gene", "hsapiens_homolog_associated_gene_name"), filters="ensembl_gene_id", values=rownames(VN.rld))
+map2 <- map2[, -2]
+map2 <- map2[map2$hsapiens_homolog_associated_gene_name!="", ]
+genenames2 <- unique(map2$hsapiens_homolog_associated_gene_name[map2$ensembl_gene_id %in% rownames(VN.rld)])
+
+VN.hugene <- matrix(NA, nrow=length(genenames2), ncol=ncol(VN.rld))
+rownames(VN.hugene) <- genenames2
+colnames(VN.hugene) <- rownames(VN.ann)
+
+for(g in genenames2) {
+  p <- as.character(map2$ensembl_gene_id[map2$hsapiens_homolog_associated_gene_name==g])
+  if(length(p)==1) {
+    VN.hugene[g, ] <- VN.rld[p, ]
+  }
+  else{
+    VN.hugene[g, ] <- apply(VN.rld[p, ], 2, max)
+  }
+}
+```
+
+## Save the Normalized Data
+
+```{r}
+save(VN.ann, VN.gene, VN.hugene, file="~/vesselNormalization/data/VN.RData")
+```
+
+The normalization data can be directly download from [GSE89758]( https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?token=onstcsssvxolxmd&acc=GSE89758).
