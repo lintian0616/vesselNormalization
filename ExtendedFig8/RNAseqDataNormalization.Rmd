@@ -7,7 +7,7 @@ output: html_document
 
 ## Data Download
 
-Go to [GSE89758]( https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?token=onstcsssvxolxmd&acc=GSE89758), and download **RSEM** read counting files (end with **_RSEM.genes.results**). Save these counting files to a folder called `RNAseqProcessedData`.
+Go to [GSE89758](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89758), and download **RSEM** read counting files (end with **_RSEM.genes.results**). Save these counting files to a folder called `RNAseqProcessedData`.
 
 We will remove one sample (**CD4KO_9768**), because this was shown to be an outlier and was removed before proceeding to downstream analysis. An outlier is defined as a number that is more than 1.5 times the inter-quartile range away from either the lower or upper quartiles. Speciﬁcally, if a number is less than `Q1 - 1.5×IQR` or greater than `Q3 + 1.5×IQR`, then it is an outlier.
 
@@ -100,4 +100,4 @@ for(g in genenames2) {
 save(VN.ann, VN.gene, VN.hugene, file="~/vesselNormalization/data/VN.RData")
 ```
 
-The normalization data can be directly download from [GSE89758]( https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?token=onstcsssvxolxmd&acc=GSE89758).
+The normalization data can be directly download from [GSE89758](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89758).

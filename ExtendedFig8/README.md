@@ -7,7 +7,7 @@ RNA-seq of Tumor-associated Endothelial Cells from Different Immunodeficient Bac
 
 ## Data Download
 
-The raw RNA-seq read fastq files and processed normalized gene expression data (**RData** format) can be download from [GSE89758]( https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?token=onstcsssvxolxmd&acc=GSE89758).
+The raw RNA-seq read fastq files and processed normalized gene expression data (**RData** format) can be download from [GSE89758](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89758).
 
 * `RSEM Count Matrix`: 20 RSEM read quantification files for 20 samples (containing Transcript Per Million (TPM) and Fragments Per Kilobase of transcript per Million (FPKM) information);  You can use `rsem-generate-data-matrix` to generate the reads counting matrix.
 
@@ -30,7 +30,7 @@ RNA-seq NGS reads were mapped using [STAR](https://github.com/alexdobin/STAR) RN
 
 Average insert sizes were calculated for each sample. Consistent with Bioanalyzer electrophoresis plot, one sample (**CD4KO_9768**) was shown to be an outlier and was removed before proceeding to downstream analysis. An outlier is defined as a number that is more than 1.5 times the inter-quartile range away from either the lower or upper quartiles. Speciﬁcally, if a number is less than `Q1 - 1.5×IQR` or greater than `Q3 + 1.5×IQR`, then it is an outlier.
 
-[DEseq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) v1.14.1 R package was used to normalize the gene expression matrix. The R code for data normalization can be found in `RNAseqDataNormalization.Rmd`. The normalization data can be directly download from [GSE89758]( https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?token=onstcsssvxolxmd&acc=GSE89758).
+[DEseq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) v1.14.1 R package was used to normalize the gene expression matrix. The R code for data normalization can be found in `RNAseqDataNormalization.Rmd`. The normalization data can be directly download from [GSE89758](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89758).
 
 ## Gene Set Enrichment Analysis
 
