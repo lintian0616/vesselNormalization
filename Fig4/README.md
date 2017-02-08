@@ -11,6 +11,6 @@ In the paper, we use **hypo2**, **pimo** and **vegf** signature.
 
 **PDX_Pimo_Fig4i.csv** is the source data for **Fig. 4i**. 
 
-**Cor_Test_CD4T_Fig4j.csv** is the processed data for the correlation between CD4+ T cells with hypoxia pimonidazole signature and GPAGs-PPAGs. This is used to generate the **Fig. 4j**. TCGA RNA-seq data were download from [UCSC Cancer Genome Browser](https://genome-cancer.ucsc.edu/), and used as input for [CIBERSORT](https://cibersort.stanford.edu/index.php) to estimate the relative abundance of CD4+ T cells (naïve CD4+ T cells, memory resting CD4+ T cells and memory activated CD4+ T cells) among 22 leukocyte compositions. We used 1000 permutation and disabled quantile normalization.
+**Cor_Test_CD4T_Fig4j.csv** is the processed data for the correlation between CD4+ T cells with hypoxia pimonidazole signature and GPAGs-PPAGs. This is used to generate the **Fig. 4j**. TCGA RNA-seq data were download from [UCSC Cancer Genome Browser](https://genome-cancer.ucsc.edu/), and used as input for [CIBERSORT](https://cibersort.stanford.edu/index.php) to estimate the relative abundance of CD4+ T cells (naïve CD4+ T cells, memory resting CD4+ T cells and memory activated CD4+ T cells) among 22 leukocyte compositions. We used 1000 permutation and disabled quantile normalization. **TCGA_CIBERSORT.Rmd** is used to download TCGA RNA-seq data, and perform correlation test. The CIBERSORT output can be found in `TCGA_CIBERSORT` folder.
 
 **Fig4.Rmd** is used to generate the **Fig. 4a,b,j**.

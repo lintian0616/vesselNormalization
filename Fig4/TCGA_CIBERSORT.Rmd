@@ -1,0 +1,44 @@
+---
+title: "Running CIBERSORT Using TCGA RNAseq Data"
+author: "Lin Tian"
+date: "2/8/2017"
+output: html_document
+---
+
+Here I just use **breast cancer** as an example to illustrate how to apply [CIBERSORT](https://cibersort.stanford.edu/) to TCGA RNA-seq data. This can be used to estimate the percentage of specific type of immune cells. Detailed description of CIBERSORT can be found in this [Nature Method](http://www.nature.com/nmeth/journal/v12/n5/abs/nmeth.3337.html) paper.
+
+## Download TCGA RNAseq data
+
+```
+wget https://genome-cancer.ucsc.edu/download/public/TCGA_BRCA_exp_HiSeqV2-2015-02-24.tgz
+tar -zxvf TCGA_BRCA_exp_HiSeqV2-2015-02-24.tgz
+```
+
+```{r}
+brcaRNAseq <- read.delim("TCGA_BRCA_exp_HiSeqV2-2015-02-24/genomicMatrix", row.names=1, as.is=TRUE)
+colnames(brcaRNAseq) <- gsub("[.]", "-", colnames(brcaRNAseq))
+```
+
+## Convert TCGA Gene Expression to CIBERSORT Input Format
+
+```{r}
+write.table(data.frame("GeneSymbol"=rownames(brcaRNAseq), as.data.frame(brcaRNAseq), row.names=NULL), file="~/Downloads/brcaCIBERSort", quote=FALSE, sep="\t", row.names=FALSE)
+```
+
+## Correlation between CD4+ T cells with Pimonidazole Signature and GPAGs-PPAGs
+
+```{r}
+load("~/vesselNormalization/data/GPAGs_PPAGs.RData")
+load("~/vesselNormalization/Fig4/hypoxia.RData")
+brca_ciber <- read.csv("~/vesselNormalization/Fig4/TCGA_CIBERSORT/BRCA_ciber.csv")
+brca_ciber$Input.Sample <- gsub("[.]", "-", brca_ciber$Input.Sample)
+all.equal(brca_ciber$Input.Sample, colnames(brcaRNAseq))
+brcaGPAG <- apply(brcaRNAseq[GPAGs, ], 2, function(x) sum(x, na.rm=TRUE))
+brcaPPAG <- apply(brcaRNAseq[PPAGs, ], 2, function(x) sum(x, na.rm=TRUE))
+brcaCombineAng <- brcaGPAG - brcaPPAG
+brcaPimo <- apply(brcaRNAseq[pimo, ], 2, function(x) sum(x, na.rm=TRUE))
+brcaCD4T <- rowSums(brca_ciber[, grep("T.cells.CD4", colnames(brca_ciber))])
+
+cor.test(brcaCD4T, brcaCombineAng)
+cor.test(brcaCD4T, brcaPimo)
+```
