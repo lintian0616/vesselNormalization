@@ -1,0 +1,137 @@
+---
+title: "Figure 4"
+author: "Lin Tian"
+date: "2/7/2017"
+output: html_document
+---
+
+
+```{r}
+setwd("~/vesselNormalization/Fig4")
+load("hypoxia.RData") ## load hypoxia signature
+load("PDX.Hypoxia.RData") ## load PDX microarray gene expression data
+library(ggplot2)
+```
+
+## Compare Hypoxia Level with PDX with Human Samples (Fig. 4a)
+
+### Bladder Cancer
+
+```{r}
+blca_pimo <- scale(apply(GSE67312.exp[pimo[pimo %in% rownames(GSE67312.exp)], ], 2, function(x) sum(x, na.rm=TRUE)))
+blca_pdx <- data.frame(id=GSE67312.ann$ID, type=ifelse(GSE67312.ann$Type=="Bladder tumor", "original", "PDX"), pimo=blca_pimo)
+
+t.test(blca_pdx$pimo ~ blca_pdx$type, paired=TRUE)
+
+ggplot(blca_pdx, aes(x=type, y=pimo, colour=type))+scale_colour_manual(values = c("#A6CEE3","#1F78B4"))+geom_boxplot(alpha=0)+geom_point(size=4)+geom_line(aes(group=id), colour="black")+ylim(c(-2.5, 2.5))+theme_bw()+theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), legend.title=element_blank(), legend.key=element_blank())+scale_size_area()+coord_fixed(ratio=1)
+```
+
+### Breast Cancer
+
+Because micro-environment plays important role in tumor progression, we only choose orthotopic tranplant PDX for comparison.
+
+```{r}
+sample_table <- combine.ann[combine.ann$Site=="primary breast tumor", ]
+select_samples <- c("GSM805892", "GSM805893", "GSM805895", "GSM805896", "GSM805898", "GSM805899", "GSM805901", "GSM805902", "GSM611019", "GSM611022", "GSM611023", "GSM611028", "GSM611039", "GSM611043", "GSM611058", "GSM611061", "GSM1022608", "GSM1022610")
+sample_table <- sample_table[select_samples, ]
+select_exp <- combine.exp[, select_samples]
+brca_pimo <- apply(select_exp[pimo[pimo %in% rownames(select_exp)], ], 2, function(x) sum(x, na.rm=TRUE))
+brca_pimo_HCI <- scale(brca_pimo[1:8])
+brca_pimo_WHIM <- scale(brca_pimo[9:18])
+brca_pimo2 <- c(brca_pimo_HCI, brca_pimo_WHIM)
+brca_pdx <- data.frame(id=sample_table$ID, type=ifelse(sample_table$Type=="original tumor", "original", "PDX"), pimo=brca_pimo2)
+
+t.test(brca_pdx$pimo ~ brca_pdx$type, paired=TRUE)
+
+ggplot(brca_pdx, aes(x=type, y=pimo, colour=type))+scale_colour_manual(values = c("#FB9A99","#E31A1C"))+geom_boxplot(alpha=0)+geom_point(size=4)+geom_line(aes(group=id), colour="black")+ylim(c(-2.5, 2.5))+theme_bw()+theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), legend.title=element_blank(), legend.key=element_blank())+scale_size_area()+coord_fixed(ratio=1)
+```
+
+
+### Liver Cancer
+
+We choose the same passage number (#3) PDX for comparison.
+
+```{r}
+liver_selected <- c("GSM1346697", "GSM1346713", "GSM1346698", "GSM1346717", "GSM1346699", "GSM1346718", "GSM1346700", "GSM1346719", "GSM1346701", "GSM1346720", "GSM1346702", "GSM1346721", "GSM1346703", "GSM1346724", "GSM1346704", "GSM1346725", "GSM1346705", "GSM1346730")
+liver_pimo <- scale(apply(gse55828.exp[pimo[pimo %in% rownames(gse55828.exp)], liver_selected], 2, function(x) sum(x, na.rm=TRUE)))
+liver_pdx <- data.frame(id=gse55828.ann[match(liver_selected, gse55828.ann$Name), "ID"], type=ifelse(gse55828.ann[match(liver_selected, gse55828.ann$Name), "Type"]=="Liver cancer tumor", "original", "PDX"), pimo=liver_pimo)
+
+t.test(liver_pdx$pimo ~ liver_pdx$type, paired=TRUE)
+
+ggplot(liver_pdx, aes(x=type, y=pimo, colour=type))+scale_colour_manual(values = c("#FDBF6F","#B15928"))+geom_boxplot(alpha=0)+geom_point(size=4)+geom_line(aes(group=id), colour="black")+ylim(c(-2.5, 2.5))+theme_bw()+theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), legend.title=element_blank(), legend.key=element_blank())+scale_size_area()+coord_fixed(ratio=1)
+```
+
+### Ovarian Cancer
+
+```{r}
+ov_selected <- c("GSM1371292", "GSM1371312", "GSM1371301", "GSM1371310", "GSM1371289", "GSM1371296", "GSM1371286", "GSM1371307", "GSM1371314", "GSM1371315", "GSM1371287", "GSM1371298", "GSM1371302", "GSM1371316", "GSM1371291", "GSM1371297", "GSM1371288", "GSM1371295", "GSM1371290", "GSM1371311", "GSM1371293", "GSM1371294")
+ov_pimo <- scale(apply(gse56920.exp[pimo[pimo %in% rownames(gse56920.exp)], ov_selected], 2, function(x) sum(x, na.rm=TRUE)))
+ov_pdx <- data.frame(id=gse56920.ann[match(ov_selected, gse56920.ann$Name), "ID"], type=ifelse(gse56920.ann[match(ov_selected, gse56920.ann$Name), "Type"]=="patient-derived tumor", "original", "PDX"), pimo=ov_pimo)
+ov_pdx$id <- sub(".+(HOC.*)_.+", "\\1", ov_pdx$id)
+ov_pdx$id <- sub("_pt", "", ov_pdx$id)
+
+replicates <- data.frame(id=c("HOC164", "HOC182"), type=c("PDX", "PDX"), pimo=c(colMeans(data.matrix(ov_pdx[ov_pdx$id=="HOC164" & ov_pdx$type=="PDX", "pimo"])), colMeans(data.matrix(ov_pdx[ov_pdx$id=="HOC182" & ov_pdx$type=="PDX", "pimo"]))))
+rownames(replicates) <- c("GSM1371307_rep", "GSM1371298_rep")
+ov_pdx <- rbind(ov_pdx, replicates)
+ov_pdx <- ov_pdx[!(rownames(ov_pdx) %in% c("GSM1371307", "GSM1371314", "GSM1371315", "GSM1371298", "GSM1371302", "GSM1371316")), ]
+ov_pdx <- ov_pdx[order(ov_pdx$id), ]
+
+t.test(ov_pdx$pimo ~ ov_pdx$type, paired=TRUE)
+
+ggplot(ov_pdx, aes(x=type, y=pimo, colour=type))+scale_colour_manual(values = c("#B2DF8A","#33A02C"))+geom_boxplot(alpha=0)+geom_point(size=4)+geom_line(aes(group=id), colour="black")+ylim(c(-2.5, 2.5))+theme_bw()+theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), legend.title=element_blank(), legend.key=element_blank())+scale_size_area()+coord_fixed(ratio=1)
+```
+
+## Mike Lewis's Dataset: Pooled comparison between human original tumor and PDX (Fig. 4b)
+
+```{r}
+lewis_pimo <- scale(apply(gse34412.exp[pimo[pimo %in% rownames(gse34412.exp)], ], 2, function(x) sum(x, na.rm=TRUE)))
+lewis_hypo1 <- scale(apply(gse34412.exp[hypo1[hypo1 %in% rownames(gse34412.exp)], ], 2, function(x) sum(x, na.rm=TRUE)))
+lewis_hypo2 <- scale(apply(gse34412.exp[hypo2[hypo2 %in% rownames(gse34412.exp)], ], 2, function(x) sum(x, na.rm=TRUE)))
+lewis_vegf <- scale(apply(gse34412.exp[vegf[vegf %in% rownames(gse34412.exp)], ], 2, function(x) sum(x, na.rm=TRUE)))
+all.equal(rownames(gse34412.ann), colnames(gse34412.exp))
+lewis_pdx <- data.frame(type=gse34412.ann$Type, pimo=lewis_pimo, hypo1=lewis_hypo1, hypo2=lewis_hypo2, vegf=lewis_vegf)
+
+t.test(lewis_pdx$pimo ~ lewis_pdx$type)
+t.test(lewis_pdx$hypo1 ~ lewis_pdx$type)
+t.test(lewis_pdx$hypo2 ~ lewis_pdx$type)
+t.test(lewis_pdx$vegf ~ lewis_pdx$type)
+
+## Hypo Pimo Signature
+ggplot(lewis_pdx, aes(x=type, y=pimo, colour=type))+scale_colour_manual(values = c("#FB9A99","#E31A1C"))+geom_boxplot(alpha=0)+geom_point(size=3)+theme_bw()+theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), legend.title=element_blank(), legend.key=element_blank())+scale_size_area()+coord_fixed(ratio=1.3)
+
+## West's Hypoxia Signature
+ggplot(lewis_pdx, aes(x=type, y=hypo2, colour=type))+scale_colour_manual(values = c("#FB9A99","#E31A1C"))+geom_boxplot(alpha=0)+geom_point(size=3)+theme_bw()+theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), legend.title=element_blank(), legend.key=element_blank())+scale_size_area()+coord_fixed(ratio=1)
+
+## VEGF Signature
+ggplot(lewis_pdx, aes(x=type, y=vegf, colour=type))+scale_colour_manual(values = c("#FB9A99","#E31A1C"))+geom_boxplot(alpha=0)+geom_point(size=3)+theme_bw()+theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(), legend.title=element_blank(), legend.key=element_blank())+scale_size_area()+coord_fixed(ratio=1.2)
+```
+
+## PDX Hypoxia (Pimonidazole Staining) measurement after Th1 adoptive transfer (Fig. 4i)
+
+```{r}
+load("~/vesselNormalization/data/gse34412.Breast.RData")
+gse34112.select.ann <- gse34412.ann[c("GSM847890", "GSM847898", "GSM847908", "GSM847921", "GSM847888", "GSM847901", "GSM847911"), ]
+gse34112.select.exp <- gse34412.exp[, rownames(gse34112.select.ann)]
+
+vegf <- vegf[vegf %in% rownames(gse34112.select.exp)]
+gse34112.select.ann$Vegf <- apply(gse34112.select.exp[vegf, ], 2, sum)
+
+pdx.df <- read.csv("PDX_Pimo_Fig4i.csv", as.is=TRUE)
+pdx.df$VEGF <- gse34112.select.ann[c("GSM847890", "GSM847898", "GSM847908", "GSM847921", "GSM847888", "GSM847901", "GSM847911", NA, NA), "Vegf"]
+pdx.df$ID <- c("B", "C", "E", "G", "A", "D", "F", "I", "H")
+fill_colours <- c(rev(c("#a50026", "#d73027", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#d9ef8b", "#a6d96a", "#66bd63", "#1a9850", "#006837")), rep("#a50026", 8))
+ggplot(data=pdx.df, aes(x=CTRL_Pimo, y=Th1_Pimo)) + geom_point(aes(fill=VEGF), size=6, shape=21, alpha=0.8) + scale_x_continuous(breaks=seq(0, 55, by=10), limits=c(0, 55)) + geom_text(hjust=0, vjust=-1, aes(label=ID)) + scale_fill_gradientn(colours=fill_colours) + geom_abline(slope=1, intercept=0) + scale_y_continuous(breaks=seq(0, 50, by=10), limits=c(0, 50))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=1)
+```
+
+## Correlation between CD4+ T cells with Hypoxia and GPAGs - PPAGs (Fig. 4j)
+
+```{r}
+library(pheatmap)
+library(RColorBrewer)
+CD4Cor <- read.csv("Cor_Test_CD4T_Fig4j.csv", row.names=1)
+CD4Cor <- CD4Cor[sort(rownames(CD4Cor)), ]
+CD4CorSig <- CD4Cor[, c(2,4)] ## P values
+CD4Cor <- CD4Cor[, c(1,3)] ## R values
+pheatmap(CD4Cor, cellwidth=30, cellheight=24, color = brewer.pal(n=11, "PuOr")[-1], cluster_rows=FALSE, cluster_cols=FALSE)
+```
+
