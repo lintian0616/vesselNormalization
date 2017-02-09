@@ -1,0 +1,28 @@
+---
+title: "Dot Plots for Immuno-staining"
+author: "Lin Tian"
+date: "2/9/2017"
+output: html_document
+---
+
+## Setting working directory and import data
+
+```{r}
+library(ggplot2)
+source("https://raw.githubusercontent.com/lintian0616/tools/master/summarySE.R")
+setwd("~/vesselNormalization/IF_Visualization")
+E0771 <- read.csv("CD31_NG2.csv", as.is=TRUE)
+E0771$Strain <- factor(E0771$Strain, levels=c("WT", "CD4KO", "CD8KO", "TCRKO"))
+
+## Pericyte Coverage
+E0771_s <- summarySE(E0771, measurevar="NG2.CD31", groupvars=c("Strain", "MouseID"))
+E0771_ss <- summarySE(E0771_s, measurevar="NG2.CD31", groupvars="Strain")
+
+ggplot() + geom_point(data=E0771, aes(x=Strain, y=NG2.CD31, colour=Strain), alpha=0.68, shape=16, size=4, position=position_jitterdodge(jitter.width=1.5)) + scale_colour_manual(values=c("#bdbdbd","#fdbf6f", "#a6cee3", "#fb9a99")) + geom_point(data=E0771_s, aes(x=Strain, y=NG2.CD31, fill=Strain), shape=21, alpha=0.8, size=8, position=position_jitterdodge(jitter.width=1.5)) + scale_fill_manual(values=c("#999999","#ff7f00", "#1f78b4", "#e31a1c")) + geom_errorbar(data=E0771_ss, aes(x=Strain, y=NG2.CD31, ymin=NG2.CD31-se, ymax=NG2.CD31+se), width=0.36)+ geom_boxplot(data=E0771_ss, aes(x=Strain, y=NG2.CD31), width=1, fill=NA) + scale_y_continuous(breaks=seq(0, 100, by=20), limits=c(0, 100))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.05)
+
+t.test(NG2.CD31 ~ Strain, data=subset(E0771_s, Strain %in% c("WT", "CD4KO")))
+t.test(NG2.CD31 ~ Strain, data=subset(E0771_s, Strain %in% c("WT", "CD8KO")))
+t.test(NG2.CD31 ~ Strain, data=subset(E0771_s, Strain %in% c("WT", "TCRKO")))
+```
+
+
