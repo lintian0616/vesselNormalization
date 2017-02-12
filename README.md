@@ -8,10 +8,10 @@ File Name  | Description
 **data** | source data for the bioinformatic analysis
 **LungMetQuantify** | [MATLAB](https://www.mathworks.com/) source code for lung macro-metastasis quantification
 **VesselQuantify** | [CellProfiler](http://cellprofiler.org/) pipelines for vessel density/length and co-localization quantifications
-**SUM_PCA** | compare ∑GPAGs − ∑PPAGs with the first principle component from Principle Component Analysis (**Supplementary Table 1**)
+**SUM_PCA** | compare ∑GPAGs − ∑PPAGs with the first principle component from Principle Component Analysis (**Supplementary Table 1c**)
 **REVIGO_Plot** | source codes for summarizing GPAGs and PPAGs using [REVIGO](http://revigo.irb.hr/) plots (**Supplementary Table 2**)
 **IF_Visualization** | source codes of dot plots for immuno-staining data visualization
-**Fig1** | source codes for **Fig. 1a-i**
+**Fig1** | source codes for **Fig. 1a-i**, and **Supplementary Table 1a,b** and **Supplementary Table 3**
 **Fig4** | source codes for **Fig. 4a,b,i,j**
 **ExtendedFig1** | source codes for **Extended Data Fig. 1b-e**
 **ExtendedFig4** | source codes for **Extended Data Fig. 4f**

@@ -94,16 +94,20 @@ cor.test(PCA_Sum_metabric.d$combined_PC1, PCA_Sum_metabric.d$combined_sum)
 ```{r}
 ## GPAGs
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ GPAGs_sum.group)
+coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ GPAGs_sum.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ GPAGs_sum.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (47/324)", "med (88/326)", "low (125/330)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 
+
 ## PPAGs
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_sum.group)
+coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_sum.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ PPAGs_sum.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (143/328)", "med (68/325)", "low (49/327)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 
 ## Combined Score
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_sum.group)
+coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_sum.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ combined_PC1.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (44/323)", "med (77/327)", "low (139/330)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 ```
@@ -113,16 +117,19 @@ legend("bottomleft", c("high (44/323)", "med (77/327)", "low (139/330)"), col=c(
 ```{r}
 ## GPAGs
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ GPAGs_PC1.group)
+coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ GPAGs_PC1.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ GPAGs_PC1.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (53/322)", "med (82/327)", "low (125/331)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 
 ## PPAGs
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_PC1.group)
+coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_PC1.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ PPAGs_PC1.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (126/326)", "med (78/327)", "low (56/327)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 
 ## Combined Score
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_PC1.group)
+coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_PC1.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ combined_PC1.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (49/323)", "med (73/329)", "low (138/328)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 ```
