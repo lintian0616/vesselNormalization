@@ -1,0 +1,99 @@
+"","X.Term","Database","ID","Input.number","Background.number","P.Value","Corrected.P.Value"
+"12","regulation of cell adhesion","Gene Ontology","GO:0030155",9,302,8.36e-06,0.001818256
+"16","positive regulation of intracellular protein transport","Gene Ontology","GO:0090316",5,120,0.000197243,0.025740232
+"17","monocyte differentiation","Gene Ontology","GO:0030224",3,25,0.000221208,0.02749297
+"18","axon guidance","Gene Ontology","GO:0007411",8,375,0.000248934,0.02824858
+"19","neuron projection guidance","Gene Ontology","GO:0097485",8,375,0.000248934,0.02824858
+"20","positive regulation of protein transport","Gene Ontology","GO:0051222",6,206,0.000300409,0.032669532
+"21","vascular endothelial growth factor receptor 2 binding","Gene Ontology","GO:0043184",2,5,0.00036185,0.036324206
+"22","regulation of protein import into nucleus","Gene Ontology","GO:0042306",5,144,0.000442851,0.03958357
+"24","collagen type IV","Gene Ontology","GO:0005587",2,6,0.000481125,0.03958357
+"25","positive regulation of cell adhesion","Gene Ontology","GO:0045785",5,147,0.000484905,0.03958357
+"26","regulation of protein localization to nucleus","Gene Ontology","GO:1900180",5,150,0.000529893,0.040677073
+"27","sheet-forming collagen","Gene Ontology","GO:0030935",2,7,0.00061687,0.045379203
+"28","cell morphogenesis","Gene Ontology","GO:0000902",13,1041,0.000641541,0.045379203
+"29","cell-substrate adhesion","Gene Ontology","GO:0031589",6,239,0.000643307,0.045379203
+"32","positive regulation of intracellular transport","Gene Ontology","GO:0032388",5,170,0.000914536,0.057781442
+"33","vascular endothelial growth factor receptor binding","Gene Ontology","GO:0005172",2,9,0.00093721,0.057781442
+"35","receptor complex","Gene Ontology","GO:0043235",6,265,0.001081818,0.058089661
+"37","cellular component morphogenesis","Gene Ontology","GO:0032989",13,1108,0.001114902,0.058089661
+"38","regulation of nucleocytoplasmic transport","Gene Ontology","GO:0046822",5,179,0.00114276,0.058089661
+"39","positive regulation of cell growth","Gene Ontology","GO:0030307",4,104,0.001157342,0.058089661
+"40","neuron projection morphogenesis","Gene Ontology","GO:0048812",9,603,0.001290318,0.063542074
+"41","cell adhesion","Gene Ontology","GO:0007155",12,1005,0.001471299,0.068137783
+"42","biological adhesion","Gene Ontology","GO:0022610",12,1009,0.001519717,0.068137783
+"43","regulation of transcription from RNA polymerase I promoter","Gene Ontology","GO:0006356",2,12,0.001537776,0.068137783
+"44","positive regulation of protein import into nucleus, translocation","Gene Ontology","GO:0033160",2,12,0.001537776,0.068137783
+"45","organ regeneration","Gene Ontology","GO:0031100",3,51,0.001544607,0.068137783
+"46","cell morphogenesis involved in differentiation","Gene Ontology","GO:0000904",10,752,0.001653479,0.06962089
+"49","extracellular matrix disassembly","Gene Ontology","GO:0022617",4,119,0.001866088,0.074428502
+"51","morphogenesis of an epithelium","Gene Ontology","GO:0002009",7,405,0.001954636,0.074428502
+"52","neuron projection development","Gene Ontology","GO:0031175",10,771,0.001974888,0.074428502
+"54","urogenital system development","Gene Ontology","GO:0001655",6,300,0.001996167,0.074428502
+"55","regulation of intracellular protein transport","Gene Ontology","GO:0033157",5,205,0.002038716,0.07494434
+"56","generation of neurons","Gene Ontology","GO:0048699",13,1195,0.002133731,0.077347732
+"57","axonogenesis","Gene Ontology","GO:0007409",8,531,0.002221417,0.078270679
+"58","morphogenesis of a branching structure","Gene Ontology","GO:0001763",5,210,0.002257022,0.078270679
+"60","platelet-derived growth factor receptor binding","Gene Ontology","GO:0005161",2,15,0.002279146,0.078270679
+"61","regulation of cell-substrate adhesion","Gene Ontology","GO:0010810",4,127,0.002345798,0.079513403
+"62","epithelial tube morphogenesis","Gene Ontology","GO:0060562",6,312,0.002415598,0.080829621
+"65","lens development in camera-type eye","Gene Ontology","GO:0002088",3,61,0.002515284,0.081048045
+"68","axon development","Gene Ontology","GO:0061564",8,549,0.002711969,0.083322768
+"71","protein import into nucleus","Gene Ontology","GO:0006606",5,226,0.003070126,0.087531488
+"72","single-organism nuclear import","Gene Ontology","GO:1902593",5,226,0.003070126,0.087531488
+"73","protein targeting to nucleus","Gene Ontology","GO:0044744",5,226,0.003070126,0.087531488
+"74","neuron differentiation","Gene Ontology","GO:0030182",12,1103,0.003093999,0.087531488
+"75","cell-substrate junction assembly","Gene Ontology","GO:0007044",3,66,0.003114467,0.087531488
+"76","tube morphogenesis","Gene Ontology","GO:0035239",6,329,0.003118938,0.087531488
+"78","mammary gland development","Gene Ontology","GO:0030879",4,139,0.003214682,0.08831915
+"79","nuclear import","Gene Ontology","GO:0051170",5,230,0.003302559,0.089788315
+"81","neurogenesis","Gene Ontology","GO:0022008",13,1264,0.00340208,0.090606425
+"82","negative regulation of cell death","Gene Ontology","GO:0060548",9,701,0.003462318,0.090763523
+"83","regulation of protein import into nucleus, translocation","Gene Ontology","GO:0033158",2,19,0.003480438,0.090763523
+"85","response to hypoxia","Gene Ontology","GO:0001666",5,236,0.003674547,0.093112296
+"87","retinal ganglion cell axon guidance","Gene Ontology","GO:0031290",2,20,0.003817887,0.094901755
+"88","response to decreased oxygen levels","Gene Ontology","GO:0036293",5,240,0.003938625,0.09670885
+"89","regulation of protein transport","Gene Ontology","GO:0051223",6,346,0.003964692,0.09670885
+"90","positive regulation of protein import into nucleus","Gene Ontology","GO:0042307",3,73,0.004089371,0.098826458
+"91","regulation of T cell differentiation in thymus","Gene Ontology","GO:0033081",2,21,0.004169927,0.099300514
+"92","cell morphogenesis involved in neuron differentiation","Gene Ontology","GO:0048667",8,591,0.004185079,0.099300514
+"93","collagen catabolic process","Gene Ontology","GO:0030574",3,74,0.004242029,0.099745018
+"94","positive regulation of inflammatory response","Gene Ontology","GO:0050729",3,75,0.004398104,0.102491537
+"95","in utero embryonic development","Gene Ontology","GO:0001701",6,359,0.004717657,0.108393719
+"96","response to oxygen levels","Gene Ontology","GO:0070482",5,251,0.004734438,0.108393719
+"97","protein import","Gene Ontology","GO:0017038",5,254,0.004969897,0.109053838
+"98","synapse organization","Gene Ontology","GO:0050808",4,158,0.005000344,0.109053838
+"99","multicellular organismal catabolic process","Gene Ontology","GO:0044243",3,79,0.005056994,0.109053838
+"100","cell projection morphogenesis","Gene Ontology","GO:0048858",9,745,0.005083597,0.109053838
+"101","neuron development","Gene Ontology","GO:0048666",10,886,0.005148633,0.109053838
+"102","extracellular matrix organization","Gene Ontology","GO:0030198",6,367,0.005230325,0.109053838
+"103","extracellular structure organization","Gene Ontology","GO:0043062",6,368,0.00529716,0.109053838
+"104","regulation of keratinocyte differentiation","Gene Ontology","GO:0045616",2,24,0.005312321,0.109053838
+"105","positive regulation of tissue remodeling","Gene Ontology","GO:0034105",2,24,0.005312321,0.109053838
+"106","positive regulation of NF-kappaB import into nucleus","Gene Ontology","GO:0042346",2,24,0.005312321,0.109053838
+"107","cell development","Gene Ontology","GO:0048468",15,1651,0.005344931,0.109053838
+"108","transmembrane receptor protein kinase activity","Gene Ontology","GO:0019199",3,81,0.005407483,0.10940721
+"111","renal system development","Gene Ontology","GO:0072001",5,262,0.005638157,0.109734426
+"112","cell part morphogenesis","Gene Ontology","GO:0032990",9,760,0.005753331,0.109734426
+"114","positive regulation of growth","Gene Ontology","GO:0045927",4,166,0.005917645,0.109734426
+"115","system development","Gene Ontology","GO:0048731",27,3738,0.005938925,0.109734426
+"116","regulation of multicellular organismal process","Gene Ontology","GO:0051239",17,1999,0.005968136,0.109734426
+"118","protein localization to nucleus","Gene Ontology","GO:0034504",5,267,0.006086585,0.109734426
+"120","embryonic hemopoiesis","Gene Ontology","GO:0035162",2,26,0.006144553,0.109734426
+"121","protein kinase C signaling","Gene Ontology","GO:0070528",2,26,0.006144553,0.109734426
+"124","cell projection organization","Gene Ontology","GO:0030030",11,1060,0.006299059,0.11042595
+"125","positive regulation of protein phosphorylation","Gene Ontology","GO:0001934",8,635,0.006320514,0.11042595
+"127","positive regulation of nucleocytoplasmic transport","Gene Ontology","GO:0046824",3,87,0.006544964,0.112168074
+"129","female pregnancy","Gene Ontology","GO:0007565",4,172,0.006674633,0.112168074
+"130","hematopoietic or lymphoid organ development","Gene Ontology","GO:0048534",8,642,0.006724787,0.112168074
+"132","embryonic placenta development","Gene Ontology","GO:0001892",3,88,0.006747275,0.112168074
+"134","receptor activator activity","Gene Ontology","GO:0030546",2,29,0.007496369,0.123053609
+"136","regulation of establishment of protein localization","Gene Ontology","GO:0070201",6,401,0.007871919,0.126047292
+"137","integrin complex","Gene Ontology","GO:0008305",2,30,0.007974076,0.126904509
+"140","regulation of focal adhesion assembly","Gene Ontology","GO:0051893",2,31,0.008465133,0.129964683
+"141","regulation of cell-substrate junction assembly","Gene Ontology","GO:0090109",2,31,0.008465133,0.129964683
+"144","positive regulation of MAP kinase activity","Gene Ontology","GO:0043406",4,188,0.00899888,0.135763445
+"145","immune system development","Gene Ontology","GO:0002520",8,678,0.009119929,0.136017225
+"147","prostaglandin metabolic process","Gene Ontology","GO:0006693",2,33,0.009486813,0.138454262
+"148","prostanoid metabolic process","Gene Ontology","GO:0006692",2,33,0.009486813,0.138454262
+"150","heart morphogenesis","Gene Ontology","GO:0003007",4,192,0.00965243,0.139186976
