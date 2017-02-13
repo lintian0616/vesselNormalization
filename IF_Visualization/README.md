@@ -6,4 +6,4 @@ We will use the source data in **Fig. 2c** as example. The source data for **Fig
 
 The output plot is shown below.
 
-![IF_output](https://raw.githubusercontent.com/lintian0616/vesselNormalization/master/IF_Visualization/IF_Example.jpeg?token=AG381j6M89hcGvi91oCQu4CG_tZ9DbHyks5YpbSFwA%3D%3D)
+![IF_output](IF_Example.jpeg)

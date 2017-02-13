@@ -4,4 +4,4 @@ The outputs of [KOBAS](http://kobas.cbi.pku.edu.cn/index.php) (`GPAGsDis.identif
 
 The custom codes attached (`REVIGO_GPAGs.Rmd` and `REVIGO_PPAGs.Rmd`) were used to generate high quality, vector-based plots. The outputs are shown below. This correspondes to **Supplementary Table 2**.
 
-![REVIGO_plots](https://raw.githubusercontent.com/lintian0616/vesselNormalization/master/data/REVIGO.jpg?token=AG381kLBEVkPN3FOLvv8nZJkWc_sbQNJks5YoTM7wA%3D%3D)
+![REVIGO_plots](../data/REVIGO.jpg)
