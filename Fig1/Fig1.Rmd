@@ -86,7 +86,7 @@ plot(survfit(Surv(selected_patient.d.ann$T/30, selected_patient.d.ann$DSS) ~ pat
 legend("bottomleft", c("Cluster I (151/333)", "Cluster II (109/475)"), col=c("#CC476B", "#009681"), lty=1, bty = "n", lwd=1)
 ```
 
-## Test the ($\sum$GPAGs - $\sum$PPAGs) in METABRIC Validation Dataset (Fig1 c)
+## Test the (ΣGPAGs−ΣPPAGs) in METABRIC Validation Dataset (Fig1 c)
 
 The gene expression information is stored in **metabric.v.exp**; row: patient/sample ids; col: gene names
 The patient annotation information is stored in **metabric.v.ann**; row: patient/sample ids; col: clinical parameters
@@ -101,7 +101,7 @@ plot(survfit(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combineAng.vGroup),
 legend("bottomleft", c("high (50/329)", "med (75/330)", "low (121/332)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=1)
 ```
 
-## Test the ($\sum$GPAGs - $\sum$PPAGs) for Relapse in (GSE1456) (Fig1 d)
+## Test the (ΣGPAGs−ΣPPAGs) for Relapse in (GSE1456) (Fig1 d)
 
 ```{r}
 load("~/vesselNormalization/data/gse1456.RData") ## Used processed GSE1456.RData
@@ -121,7 +121,7 @@ plot(survfit(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ gse1456.combine.group)
 legend("bottomleft", c("high (6/53)", "med (10/53)", "low (24/53)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=1)
 ```
 
-## Test the ($\sum$GPAGs - $\sum$PPAGs) for Distant Metastasis in (GSE2990) (Fig1 e)
+## Test the (ΣGPAGs−ΣPPAGs) for Distant Metastasis in (GSE2990) (Fig1 e)
 
 ```{r}
 load("~/vesselNormalization/data/gse2990.RData")
