@@ -13,7 +13,7 @@ load("~/vesselNormalization/data/p53null-tumors.RData")
 library(ggplot2)
 ```
 
-## Extend Data Fig. 4f
+## Extend Data Fig. 3q
 
 ```{r}
 pnas2011.dt.clps <- pnas2011.dt.clps[, !grepl("FVB", pnas2011.ann$models)] ## remove FVB control samples

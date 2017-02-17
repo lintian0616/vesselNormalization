@@ -1,194 +1,159 @@
 ---
-title: "Extended Data Figure 8"
+title: "Image Simulation for Activated CD4+ T Cells"
 author: "Lin Tian"
-date: "2/6/2017"
+date: "8/26/2016"
 output: html_document
 ---
 
-## Load Normalized Data
+## Read Data
+
+We use `gdata` package to read Excel file.
 
 ```{r}
-load("~/vesselNormalization/data/VN.RData")
+library(gdata)
+setwd("~/vesselNormalization/ExtendedFig9")
+DAPI_ch <- read.xls("~/vesselNormalization/data/ImageSimulation.xlsx", sheet=1, as.is=TRUE)
+CFSE_ch <- read.xls("~/vesselNormalization/data/ImageSimulation.xlsx", sheet=2, as.is=TRUE)
+tdRed_ch <- read.xls("~/vesselNormalization/data/ImageSimulation.xlsx", sheet=3, as.is=TRUE)
+lectin_ch <- read.xls("~/vesselNormalization/data/ImageSimulation.xlsx", sheet=4, as.is=TRUE)
 ```
 
-## ssGSEA and t-SNE Plot (Extended Data Fig. 8b,c)
-
-We will use ssGSEA projection to reduce the dimension. We run ssGSEA on [GenePattern](https://genepattern.broadinstitute.org). Choose the module called **ssGSEAProjection**. Instead of using latest beta version, we chose stable **v7**.
+## Remove Unstimulated CD4+ T Cells in tdRed Channel
 
 ```{r}
-## Create Input for ssGSEA
-VN.GSEA <- VN.hugene
-VN.GSEA <- cbind(rownames(VN.GSEA), rep(NA, nrow(VN.GSEA)), VN.GSEA)
-VN.GSEA <- rbind(c("#1.2", rep("", ncol(VN.GSEA)-1)), c(nrow(VN.GSEA), ncol(VN.GSEA)-2, rep("", ncol(VN.GSEA)-2)), c("NAME", "Description", colnames(VN.GSEA)[c(-1, -2)]), VN.GSEA)
-write.table(VN.GSEA, file="~/VN.ssGSEA.gct", row.names=FALSE, col.names=FALSE, sep="\t", quote=FALSE)
+minLen <- c()
+for(s in paste0("S", 1:5)) {
+  tdRed_cells <- subset(tdRed_ch, Label==s)
+  lectin_cells <- subset(lectin_ch, Label==s)
+  dist_mat <- matrix(NA, nrow=nrow(tdRed_cells), ncol=nrow(lectin_cells))
+  for(i in 1:nrow(tdRed_cells)) {
+      dist_mat[i, ] <- sqrt(sapply(lectin_cells$XStart, function(x) (x-tdRed_cells[i, "XStart"])^2) + sapply(lectin_cells$YStart, function(x) (x-tdRed_cells[i, "YStart"])^2))
+  }
+  minLen <- c(minLen, apply(dist_mat, 1, min))
+}
+tdRed_ch$minLen <- minLen
+
+tdRed_ch2 <- data.frame(Label=c(), XStart=c(), YStart=c(), minLen=c())
+for(s in paste0("S", 1:5)) {
+  print(s)
+  CFSE_cells <- subset(CFSE_ch, Label==s)
+  tdRed_cells <- subset(tdRed_ch, Label==s)
+  if(nrow(CFSE_cells)==0) {
+    tdRed_ch2 <- rbind(tdRed_ch2, tdRed_cells)
+    next
+  }
+  else {
+    removeTdRedCells <- rep(NA, nrow(CFSE_cells))
+    for(cell in 1:nrow(CFSE_cells)) {
+    removeTdRedCells[cell] <- which.min(abs(CFSE_cells[cell, "minDistLectin"] - tdRed_cells$minLen))
+    print(min(abs(CFSE_cells[cell, "minDistLectin"] - tdRed_cells$minLen)))
+    }
+  tdRed_cells <- tdRed_cells[-removeTdRedCells, ]
+  tdRed_ch2 <- rbind(tdRed_ch2, tdRed_cells)
+  }
+}
 ```
 
-We use **VN.ssGSEA.gct** as the input for ssGSEA. For the **gene sets database**, we used **c2.cp.kegg.v5.1.symbols.gmt[Curated]**. It will just take 3-5 minutes to run the program. Download the output and use the code below to make the t-SNE plot (**Extended Data Fig. 8b**). This output **gct** file can be found in `vesselNormalization/data` folder.
+
+## Plot Violin Plot (Extended Data Fig. 8c)
 
 ```{r}
-library(amap)
-library(tsne)
 library(ggplot2)
-ssGSEA_kegg <- read.table("~/vesselNormalization/data/VN.ssGSEA.kegg.gct", header=TRUE, skip=2, row.names=1, sep="\t")[, -1]
-ssGSEA_kegg <- data.matrix(ssGSEA_kegg)
-dists_gene <- Dist(t(ssGSEA_kegg), method="pearson")
-set.seed(1) ## set seed for reproducible research
-tsne_gene <- tsne(dists_gene, initial_config=NULL, k=2, initial_dims=2, perplexity=2, max_iter=10000) 
-plot(tsne_gene, bg=as.numeric(as.fumeric(as.character(VN.ann$CD4TActivity))),pch=21,xlab="First dimension",ylab="Second dimension")
-VN.ann$tsen1 <- tsne_gene[, 1]
-VN.ann$tsen2 <- tsne_gene[, 2]
-
-ggplot(VN.ann, aes(x=tsen1, y=tsen2)) + geom_point(aes(fill=strain, size=sizeFactors, colour=CD4TActivity), shape=21) + scale_fill_manual(values=c("#ff7f00", "#0084bd", "#d21e10", "#984ea3", "#4daf4a", "#999999")) + scale_colour_manual(values=c("#000000", "#ffffff")) + scale_size_area(max_size=16) +theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=1)
-```
-
-We also double checked whether CD4+ T cell deficiency induced decreased the immune signature using ssGSEA project. We will use Gene Ontology Biological Process Gene Sets Database (**c5.bp.v5.1.symbols.gmt [Gene Ontology]**) as this database has good annotated immune signatures. Use the similar steps described above. Download the ssGSEA output and use the code below to make the dot plot (**Extended Data Fig. 8c**).
-
-```{r}
-ssGSEA_GObp <- read.table("~/vesselNormalization/data/VN.ssGSEA.GObp.gct", header=TRUE, skip=2, row.names=1, sep="\t")[, -1]
-ssGSEA_GObp <- data.matrix(ssGSEA_GObp)
-ssGSEA_GObp <- as.data.frame(ssGSEA_GObp)
+### 3 pixels/um
+minDistDF <- data.frame(type=c(rep("Naive", nrow(CFSE_ch)), rep("Stimulated", nrow(tdRed_ch2))), Label=c(CFSE_ch$Label, tdRed_ch2$Label), minDist=c(CFSE_ch$minDistLectin, tdRed_ch2$minLen)/3) ### Unit of minDist: um
 
 source("https://raw.githubusercontent.com/lintian0616/tools/master/summarySE.R")
-VN.ann$ImmuneEffector <- as.numeric(ssGSEA_GObp["REGULATION_OF_IMMUNE_EFFECTOR_PROCESS", 1:nrow(VN.ann)])
-wilcox.test(ImmuneEffector ~ CD4TActivity, data=VN.ann)
-dot_df_ImmuneEffector <- summarySE(VN.ann, measurevar="ImmuneEffector", groupvars="CD4TActivity")
+minDistDF_s <- subset(summarySE(minDistDF, measurevar="minDist", groupvars=c("type", "Label")), type=="Stimulated")
 
-ggplot() + geom_errorbar(data=dot_df_ImmuneEffector, aes(x=CD4TActivity, y=ImmuneEffector, ymin=ImmuneEffector-se, ymax=ImmuneEffector+se), width=0.32)+ geom_boxplot(data=dot_df_ImmuneEffector, aes(x=CD4TActivity, y=ImmuneEffector), width=1, fill=NA) + geom_point(data=VN.ann, aes(x=CD4TActivity, y=ImmuneEffector, fill=strain, colour=CD4TActivity), shape=21, size=5) + scale_fill_manual(values=c("#ff7f00", "#0084bd", "#d21e10", "#984ea3", "#4daf4a", "#999999"))+scale_colour_manual(values=c("#000000", "#ffffff")) + scale_y_continuous(breaks=seq(-2500, -500, by=500), limits=c(-2500, -500))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.002)
+t.test(minDistDF_s$minDist, mu=mean(subset(minDistDF, type=="Naive")[, "minDist"]))
+
+ggplot() + geom_hline(yintercept=mean(CFSE_ch$minDistLectin)/3, colour="#252525") + geom_violin(data=minDistDF, aes(x=type, y=minDist), fill=NA) + geom_point(data=minDistDF, aes(x=type, y=minDist, colour=Label), alpha=0.68, shape=16, size=2, position=position_jitterdodge(dodge.width=0.5)) + scale_colour_manual(values=c("#fb9a99","#fdbf6f", "#b2df8a", "#a6cee3", "#cab2d6")) + geom_point(data=minDistDF_s, aes(x=type, y=minDist, fill=Label), shape=21, size=8, position=position_jitterdodge(dodge.width=0.5)) + scale_fill_manual(values=c("#e31a1c", "#ff7f00", "#33a02c", "#1f78b4", "#6a3d9a")) + scale_y_continuous(breaks=seq(0, 1500, by=300), limits=c(0, 1500))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.002)
 ```
 
-## Comparison of GPAGs and PPAGs in CD4+ T Cell Competent/Deficient Background (Extended Data Fig. 8d)
+## Random Simulation
+
+We perform 10,000 times of simulation for each sample. In each round of simulation, the number of simulated random dots is same with the real number of CD4+ T cells.
+
+Be cautious, we are using 2GHz CPU and 2GB RAM space instance, and it took us ~10 hours to run the chuck below 
 
 ```{r}
-## Good Angiogenssis Signature (Convert the Human Symbol to Mouse Symbol)
-GPAG.m <- c("Cx3cr1", "Cdc42", "Tnfsf12", "Cxcl12", "Srpk2", "Il1b", "Egr3", "C3", "Casp8", "Rock1", "Ang", "Tgfbr2", "Fgf10", "Cysltr1", "Ctnnb1", "Ccr2", "Krit1", "Cav1", "Ecscr", "Ptgs2", "Emcn", "Plcd3", "Jun", "Hhex", "Gpx1", "S1pr1", "Scg2", "Nr4a1", "Klf4", "Cyr61")
-GPAG.m <- GPAG.m[GPAG.m %in% rownames(VN.gene)]
-VN.ann$GPAGs <- apply(VN.gene[GPAG.m, ], 2, sum)
-wilcox.test(apply(VN.gene[GPAG.m, ], 2, sum) ~ VN.ann$CD4TActivity)
-dot_df_GPAGs <- summarySE(VN.ann, measurevar="GPAGs", groupvars="CD4TActivity")
-
-ggplot() + geom_errorbar(data=dot_df_GPAGs, aes(x=CD4TActivity, y=GPAGs, ymin=GPAGs-se, ymax=GPAGs+se), width=0.32)+ geom_boxplot(data=dot_df_GPAGs, aes(x=CD4TActivity, y=GPAGs), width=1, fill=NA) + geom_point(data=VN.ann, aes(x=CD4TActivity, y=GPAGs, fill=strain, colour=CD4TActivity), shape=21, size=5) + scale_fill_manual(values=c("#ff7f00", "#0084bd", "#d21e10", "#984ea3", "#4daf4a", "#999999"))+scale_colour_manual(values=c("#000000", "#FFFFFF")) + scale_y_continuous(breaks=seq(180, 192, by=2), limits=c(180, 192))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.32)
-
-
-## Poor Angiogenssis Signature (Convert the Human Symbol to Mouse Symbol)
-PPAG.m <- c("Gpi1", "Rbm15", "Gpr56", "Shb", "Adam15", "Col4a1", "Adam8", "Il18", "Plxdc1", "Naa15", "Erbb2", "Sphk1", "Vegfa", "Col4a2", "Myh9", "Itga5", "E2f7", "Med1", "Rock2", "Tnfrsf1a", "Pgf", "Adm2", "Angpt2", "Ephb3", "Tgfbr1", "Cxcl17", "Wnt7b")
-PPAG.m <- PPAG.m[PPAG.m %in% rownames(VN.gene)]
-VN.ann$PPAGs <- apply(VN.gene[PPAG.m, ], 2, sum)
-wilcox.test(apply(VN.gene[PPAG.m, ], 2, sum) ~ VN.ann$CD4TActivity)
-dot_df_PPAGs <- summarySE(VN.ann, measurevar="PPAGs", groupvars="CD4TActivity")
-
-ggplot() + geom_errorbar(data=dot_df_PPAGs, aes(x=CD4TActivity, y=PPAGs, ymin=PPAGs-se, ymax=PPAGs+se), width=0.32)+ geom_boxplot(data=dot_df_PPAGs, aes(x=CD4TActivity, y=PPAGs), width=1, fill=NA) + geom_point(data=VN.ann, aes(x=CD4TActivity, y=PPAGs, fill=strain, colour=CD4TActivity), shape=21, size=5) + scale_fill_manual(values=c("#ff7f00", "#0084bd", "#d21e10", "#984ea3", "#4daf4a", "#999999"))+scale_colour_manual(values=c("#000000", "#FFFFFF")) + scale_y_continuous(breaks=seq(135, 155, by=5), limits=c(135, 156.5))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.18)
-
-
-## Combined Signature
-VN.ann$Combined <- apply(VN.gene[GPAG.m, ], 2, sum) - apply(VN.gene[PPAG.m, ], 2, sum)
-wilcox.test(VN.ann$Combined ~ VN.ann$CD4TActivity)
-dot_df_Combined <- summarySE(VN.ann, measurevar="Combined", groupvars="CD4TActivity")
-
-ggplot() + geom_errorbar(data=dot_df_Combined, aes(x=CD4TActivity, y=Combined, ymin=Combined-se, ymax=Combined+se), width=0.32)+ geom_boxplot(data=dot_df_Combined, aes(x=CD4TActivity, y=Combined), width=1, fill=NA) + geom_point(data=VN.ann, aes(x=CD4TActivity, y=Combined, fill=strain, colour=CD4TActivity), shape=21, size=5) + scale_fill_manual(values=c("#ff7f00", "#0084bd", "#d21e10", "#984ea3", "#4daf4a", "#999999"))+scale_colour_manual(values=c("#000000", "#FFFFFF")) + scale_y_continuous(breaks=seq(25, 50, by=5), limits=c(24, 50))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.15)
+simulatedDist <- matrix(NA, nrow=length(paste0("S", 1:5)), ncol=10000)
+rownames(simulatedDist) <- paste0("S", 1:5)
+set.seed(10000)
+for(s in paste0("S", 1:5)) {
+  DAPI_cells <- subset(DAPI_ch, Label==s)
+  tdRed_cells <- subset(tdRed_ch, Label==s)
+  lectin_cells <- subset(lectin_ch, Label==s)
+  for(i in 1:ncol(simulatedDist)) {
+    tdRed_cells_dist <- rep(NA, nrow(tdRed_cells))
+    for(j in 1:nrow(tdRed_cells)) {
+      XY_pos <- sample(1:nrow(DAPI_cells), 2, replace=F)
+      minX_pos <- min(DAPI_cells[XY_pos, "XStart"])
+      maxX_pos <- max(DAPI_cells[XY_pos, "XStart"])
+      minY_pos <- min(DAPI_cells[XY_pos, "YStart"])
+      maxY_pos <- max(DAPI_cells[XY_pos, "YStart"])
+      randomRatio <- runif(1, 0, 1)
+      X_pos <- minX_pos + randomRatio*(maxX_pos - minX_pos)
+      Y_pos <- minY_pos + randomRatio*(maxY_pos - minY_pos)
+      tdRed_cells_dist[j] <- min(sqrt(sapply(lectin_cells$XStart, function(x) (x-X_pos)^2) + sapply(lectin_cells$YStart, function(x) (x-Y_pos)^2)))
+    }
+    simulatedDist[s, i] <- mean(tdRed_cells_dist)
+  }
+}
+save(CFSE_ch, tdRed_ch2, simulatedDist, file="SimulatedDistance.RData")
 ```
 
-## Compare the VN associated genes/pathways
-
-### VEGFA (Extended Data Fig. 8e)
+If you do not want to wait, we have save the results in `vesselNormalization/data`. And you can just go to next code chunk to load the data.
 
 ```{r}
-VN.ann$Vegfa <- VN.gene["Vegfa", ]
-wilcox.test(Vegfa ~ CD4TActivity, data=VN.ann)
-dot_df_Vegfa <- summarySE(VN.ann, measurevar="Vegfa", groupvars="CD4TActivity")
-
-ggplot() + geom_errorbar(data=dot_df_Vegfa, aes(x=CD4TActivity, y=Vegfa, ymin=Vegfa-se, ymax=Vegfa+se), width=0.32)+ geom_boxplot(data=dot_df_Vegfa, aes(x=CD4TActivity, y=Vegfa), width=1, fill=NA) + geom_point(data=VN.ann, aes(x=CD4TActivity, y=Vegfa, fill=strain, colour=CD4TActivity), shape=21, size=5) + scale_fill_manual(values=c("#ff7f00", "#0084bd", "#d21e10", "#984ea3", "#4daf4a", "#999999"))+scale_colour_manual(values=c("#000000", "#FFFFFF")) + scale_y_continuous(breaks=seq(1, 5, by=1), limits=c(1, 5.2))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.8)
-```
-
-### ANGPT1/ANGPT2 (Extended Data Fig. 8f)
-
-```{r}
-VN.ann$Angpt <- VN.gene["Angpt1", ] - VN.gene["Angpt2", ]
-wilcox.test(Angpt ~ CD4TActivity, data=VN.ann)
-dot_df_Angpt <- summarySE(VN.ann, measurevar="Angpt", groupvars="CD4TActivity")
-
-ggplot() + geom_errorbar(data=dot_df_Angpt, aes(x=CD4TActivity, y=Angpt, ymin=Angpt-se, ymax=Angpt+se), width=0.32)+ geom_boxplot(data=dot_df_Angpt, aes(x=CD4TActivity, y=Angpt), width=1, fill=NA) + geom_point(data=VN.ann, aes(x=CD4TActivity, y=Angpt, fill=strain, colour=CD4TActivity), shape=21, size=5) + scale_fill_manual(values=c("#ff7f00", "#0084bd", "#d21e10", "#984ea3", "#4daf4a", "#999999"))+scale_colour_manual(values=c("#000000", "#FFFFFF")) + scale_y_continuous(breaks=seq(-10, -4, by=2), limits=c(-10.2, -4))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.5)
-```
-
-### Sphingo-lipid (Extended Data Fig. 8i)
-
-```{r}
-## SPHINGOLIPID_METABOLIC_PROCESS (GO:0006665)
-SPHINGOLIPID <- c("Cln6", "Sgms1", "Nsmaf", "Cerk", "Gla", "Ugcg", "Asah1", "Smpd2", "Serinc1", "Ppt1", "Psap", "Sgpl1", "Sptlc1", "St6galnac6", "Sgms2", "Cln3", "Sphk1", "Smpd3", "St8sia1", "St8sia5", "St8sia3", "Large1", "Enpp7", "B4galnt1", "Neu3")
-VN.ann$Sphingolipid <- colSums(VN.gene[SPHINGOLIPID, ])
-wilcox.test(Sphingolipid ~ CD4TActivity, data=VN.ann)
-dot_df_Sphingolipid <- summarySE(VN.ann, measurevar="Sphingolipid", groupvars="CD4TActivity")
-
-ggplot() + geom_errorbar(data=dot_df_Sphingolipid, aes(x=CD4TActivity, y=Sphingolipid, ymin=Sphingolipid-se, ymax=Sphingolipid+se), width=0.32)+ geom_boxplot(data=dot_df_Sphingolipid, aes(x=CD4TActivity, y=Sphingolipid), width=1, fill=NA) + geom_point(data=VN.ann, aes(x=CD4TActivity, y=Sphingolipid, fill=strain, colour=CD4TActivity), shape=21, size=5) + scale_fill_manual(values=c("#ff7f00", "#0084bd", "#d21e10", "#984ea3", "#4daf4a", "#999999"))+scale_colour_manual(values=c("#000000", "#FFFFFF")) + scale_y_continuous(breaks=seq(100, 125, by=5), limits=c(100, 125))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.16)
+save(CFSE_ch, tdRed_ch2, simulatedDist, file="~/vesselNormalization/data/SimulatedDistance.RData")
 ```
 
 
-## Pathway Analysis (Extended Data Fig. 8g,h)
-
-As we are sequencing the CD31+ tumor endothelial cells, not all the genes are expressed in this specific cell type. When we perform pathway analysis, it is better to remove these genes out. We summed up **TPM** (Transcripts Per Kilobase Million) of each gene in all the samples and filtered out the genes with total counts no more than 50.
-
-In addition, since we used [MATQ-seq](http://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.4145.html), lots of pseudo-genes (non-polyA tailed) and less annotated genes were not excluded. These genes (start with **Gm** or end with **Rik**) are not useful for the current project, and we just removed them as well.
+## Plot Histogram (Extended Data Fig. 8d)
 
 ```{r}
-VN_count <- read.table("~/vesselNormalization/data/VN.txt", header=TRUE, sep="\t", row.names=1)
-keepGenes <- rownames(VN_count)[rowSums(VN_count) > 50]
+load("~/vesselNormalization/data/SimulatedDistance.RData")
 
-library(biomaRt)
-ensembl <- useMart("ENSEMBL_MART_ENSEMBL", host="www.ensembl.org")
-ensembl <- useDataset("mmusculus_gene_ensembl",mart=ensembl)
-map <- getBM(mart=ensembl, attributes=c("ensembl_gene_id", "mgi_symbol"), filters="ensembl_gene_id", values=keepGenes)
-map <- map[map$mgi_symbol!="", ]
-genenames <- unique(map$mgi_symbol)
-pseudo <- grepl("^Gm", genenames) ## pseudo genes
-unannotated <- grepl("Rik", genenames)
-map2 <- getBM(mart=ensembl, attributes=c("ensembl_gene_id", "mgi_symbol"), filters="mgi_symbol", values=genenames[!(pseudo | unannotated)])
-map2 <- map2[map2$ensembl_gene_id!="", ]
-map2
-```
+library(ggplot2)
+
+## S1
+S1_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S1"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S1")[, "minLen"]), as.numeric(simulatedDist[1, ]))/3) ### Unit of minDist: um
+
+ggplot(data=S1_df) + geom_histogram(data=subset(S1_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#fb9a99", colour=NA, alpha=0.68)  + geom_density(data=subset(S1_df, type=="Real"), aes(x=minDist), colour="#e31a1c") + geom_density(data=subset(S1_df, type=="Stimulated"), aes(x=minDist), colour="#e31a1c", linetype=2) + geom_vline(xintercept = mean(subset(S1_df, type=="Real")[, "minDist"]), colour="#e31a1c") + scale_y_continuous(breaks=seq(0, 0.05, by=0.01), limits=c(0, 0.05), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=1000)
+### p value
+sum(mean(subset(S1_df, type=="Real")[, "minDist"]) > subset(S1_df, type=="Stimulated")[, "minDist"]) / length(subset(S1_df, type=="Stimulated")[, "minDist"])
 
 
-### GSEA (Extended Data Fig. 8g)
+## S2
+S2_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S2"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S2")[, "minLen"]), as.numeric(simulatedDist[2, ]))/3) ### Unit of minDist: um
 
-We can use curated mouse version Gene Ontology Biological Process Gene Set database from [Bader Lab's GeneSets](http://baderlab.org/GeneSets). Go to their [FTP portal](http://download.baderlab.org/EM_Genesets/). In the manuscript, we use the **Mouse_GOBP_AllPathways_no_GO_iea_May_24_2015_symbol.gmt** of [May_24_2015/](http://download.baderlab.org/EM_Genesets/May_24_2015/Mouse/symbol/) version.
+ggplot(data=S2_df) + geom_histogram(data=subset(S2_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#fdbf6f", colour=NA, alpha=0.68)  + geom_density(data=subset(S2_df, type=="Real"), aes(x=minDist), colour="#ff7f00") + geom_density(data=subset(S2_df, type=="Stimulated"), aes(x=minDist), colour="#ff7f00", linetype=2) + geom_vline(xintercept = mean(subset(S2_df, type=="Real")[, "minDist"]), colour="#ff7f00") + scale_y_continuous(breaks=seq(0, 0.06, by=0.02), limits=c(0, 0.06), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=1200)
+### p value
+sum(mean(subset(S2_df, type=="Real")[, "minDist"]) > subset(S2_df, type=="Stimulated")[, "minDist"]) / length(subset(S2_df, type=="Stimulated")[, "minDist"])
 
-The code below shows how to prepare gene expression **gct** and phenotype label **cls** files.
 
-```{r}
-colOrder <- c(c(3,4,5,9,10,11,16,17,18,19), c(1,2,6,7,8,12,13,14,15)) ## WT, CD4KO
-VN.GSEA <- VN.gene[map2$mgi_symbol, colOrder]
-VN.GSEA <- cbind(rownames(VN.GSEA), rep(NA, nrow(VN.GSEA)), VN.GSEA)
-VN.GSEA <- rbind(c("#1.2", rep("", ncol(VN.GSEA)-1)), c(nrow(VN.GSEA), ncol(VN.GSEA)-2, rep("", ncol(VN.GSEA)-2)), c("NAME", "Description", colnames(VN.GSEA)[c(-1, -2)]), VN.GSEA)
-write.table(VN.GSEA, file="~/VN_RNAseq.gct", row.names=FALSE, col.names=FALSE, sep="\t", quote=FALSE)
+## S3
+S3_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S3"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S3")[, "minLen"]), as.numeric(simulatedDist[3, ]))/3) ### Unit of minDist: um
 
-VN.cls <- matrix("", nrow=3, ncol=ncol(VN.GSEA)-2)
-VN.cls[1, 1:3] <- c(ncol(VN.GSEA)-2, length(unique(c("WT", "CD4KO"))), 1)
-VN.cls[2, 1:3] <- c("#", "WT", "CD4KO") ## WT: 0; CD4KO: 1
-VN.cls[3, ] <- c(rep(0, length(c(3,4,5,9,10,11,16,17,18,19))), rep(1, length(c(1,2,6,7,8, 12,13,14,15))))
-write.table(VN.cls, file="~/VN_RNAseq.cls", row.names=FALSE, col.names=FALSE, sep=" ", quote=FALSE)
-```
+ggplot(data=S3_df) + geom_histogram(data=subset(S3_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#b2df8a", colour=NA, alpha=0.68)  + geom_density(data=subset(S3_df, type=="Real"), aes(x=minDist), colour="#33a02c") + geom_density(data=subset(S3_df, type=="Stimulated"), aes(x=minDist), colour="#33a02c", linetype=2) + geom_vline(xintercept = mean(subset(S3_df, type=="Real")[, "minDist"]), colour="#33a02c") + scale_y_continuous(breaks=seq(0, 0.10, by=0.02), limits=c(0, 0.10), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=750)
+### p value
+sum(mean(subset(S3_df, type=="Real")[, "minDist"]) > subset(S3_df, type=="Stimulated")[, "minDist"]) / length(subset(S3_df, type=="Stimulated")[, "minDist"])
 
-The output of GSEA (**VN_RNAseq_GObp_ttest_permuGene10000.zip**) can be found in `vesselNormalization/data` folder.
 
-### Differential Analysis (Extended Data Fig. 8h)
+## S4
+S4_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S4"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S4")[, "minLen"]), as.numeric(simulatedDist[4, ]))/3) ### Unit of minDist: um
 
-```{r}
-library(limma)
-library(heatmap3)
-library(amap)
-library(RColorBrewer)
+ggplot(data=S4_df) + geom_histogram(data=subset(S4_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#a6cee3", colour=NA, alpha=0.68)  + geom_density(data=subset(S4_df, type=="Real"), aes(x=minDist), colour="#1f78b4") + geom_density(data=subset(S4_df, type=="Stimulated"), aes(x=minDist), colour="#1f78b4", linetype=2) + geom_vline(xintercept = mean(subset(S4_df, type=="Real")[, "minDist"]), colour="#1f78b4") + scale_y_continuous(breaks=seq(0, 0.03, by=0.01), limits=c(0, 0.03), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=3000)
+### p value
+sum(mean(subset(S4_df, type=="Real")[, "minDist"]) > subset(S4_df, type=="Stimulated")[, "minDist"]) / length(subset(S4_df, type=="Stimulated")[, "minDist"])
 
-design <- model.matrix(~VN.ann$CD4TActivity)
-colnames(design)[1:2] <- c("Intercept", "CD4T")
-VN.gene <- VN.gene[ensembl_IDs$mgi_symbol, ]
 
-gene.fit <- lmFit(VN.gene, design)
-gene.fit2 <- eBayes(gene.fit)
-CD4T_Endo <- topTable(gene.fit2, n=nrow(VN.gene), coef=2, adjust.method="fdr")
-CD4T_Endo_up <- CD4T_Endo[CD4T_Endo$logFC > 1, "ID"]
-CD4T_Endo_down <- CD4T_Endo[CD4T_Endo$logFC < -1, "ID"] ## VEGFA is among one of the genes most upregulated in CD4+ T cell deficient group
-rowOrder <- c(rev(c(7,6,8,13,15,14,12,1,2)), c(5,4,3,9,10,11,16,17,18,19))
+## S5
+S5_df <- data.frame(type=c(rep("Real", nrow(subset(tdRed_ch2, Label=="S5"))), rep("Stimulated", ncol(simulatedDist))), minDist=c(as.numeric(subset(tdRed_ch2, Label=="S5")[, "minLen"]), as.numeric(simulatedDist[5, ]))/3) ### Unit of minDist: um
 
-top20_Upregulated_WT <- CD4T_Endo_up[1:20]
-top20_Upregulated_WT
-heatmap3(VN.gene[top20_Upregulated_WT, rowOrder], col=rev(colorRampPalette(brewer.pal(n=10, name = "RdYlBu"))(100)), Colv=NA, Rowv=NA, scale="row", balanceColor=TRUE, revC=TRUE)
+ggplot(data=S5_df) + geom_histogram(data=subset(S5_df, type=="Real"), aes(x=minDist, y = ..density..), fill="#cab2d6", colour=NA, alpha=0.68)  + geom_density(data=subset(S5_df, type=="Real"), aes(x=minDist), colour="#6a3d9a") + geom_density(data=subset(S5_df, type=="Stimulated"), aes(x=minDist), colour="#6a3d9a", linetype=2) + geom_vline(xintercept = mean(subset(S5_df, type=="Real")[, "minDist"]), colour="#6a3d9a") + scale_y_continuous(breaks=seq(0, 0.03, by=0.01), limits=c(0, 0.03), trans = "sqrt")+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=2000)
+### p value
+sum(mean(subset(S5_df, type=="Real")[, "minDist"]) > subset(S5_df, type=="Stimulated")[, "minDist"]) / length(subset(S5_df, type=="Stimulated")[, "minDist"])
 ```
 

@@ -1,46 +1,36 @@
-RNA-seq of Tumor-associated Endothelial Cells from Different Immunodeficient Backgrounds
-========
-  
-  To investigate the impact of CD4+ T cells on tumor vasculature, we performed transcriptome profiling on tumor-associated endothelial cells in mice with or without functional CD4 T cells. In addition to examining four pathways that affect vessel maturation (**VEGFA**, **ANGPT1/ANGPT2**, **TGFbR**, and **sphingolipid metabolism**), we ran Gene Set Enrichment Analysis (**GSEA**) and found a down-regulation of cellular adhesion and extracellular matrix assembly-related pathways in the CD4 T cell deficient group. This suggests that CD4+ T cells play an important role in promoting tumor vessel integrity and normalization.
+We asked if activated T cells preferentially co-localize with endothelial cells. We adoptively transferred tdRFP+ stimulated CD4+ T cells and tdRFP+;CFSE+ CD4+ naïve T cells into the E0771 tumor-bearing TCRKO mice. T cell activation is almost always accompanied by proliferation, which would lead to a dilution of CFSE. Therefore, this assay allowed us to distinguish low CFSE intensity T cells activated in vivo from naïve T cells with high CFSE intensity.
 
-**ExtendedFig8.Rmd** contains the source code for **Extended Data Fig. 8b-h**.
+We then performed whole section mosaic scanning and image simulation to study spatial distributions of the transferred CD4+ T cells and functional tumor vessels (lectin+).
 
-## Data Download
+Here are the descriptions of 4 channels:
 
-The raw RNA-seq read fastq files and processed normalized gene expression data (**RData** format) can be download from [GSE89758](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89758).
+* **DAPI**: Nuclear Stains; this is used to define tumor boundary edge;
+* **Cy2**: CFSE; this is used to identify CD4+ naïve T cells (tdRFP+;CFSE+);
+* **Cy3**: tdRed; this is the marker for adoptive transferred CD4+ T cells;
+* **Cy5**: lectin; this is used as a marker for functional/normalized tumor vessel.
 
-* `RSEM Count Matrix`: 20 RSEM read quantification files for 20 samples (containing Transcript Per Million (TPM) and Fragments Per Kilobase of transcript per Million (FPKM) information);  You can use `rsem-generate-data-matrix` to generate the reads counting matrix.
+We deposited large mosaic imaging files to [figshare](https://figshare.com/), which can be downloaded from this [link](https://figshare.com/articles/New_draft_item/4625140).
 
-```
-rsem-generate-data-matrix *_RSEM.genes.results > VN.txt
-```
+After downloading the files, we used [imageJ](https://imagej.nih.gov/ij/) to manually remove the background. Here are the threshold we choose for background removal. Because the file is very big (**single channel image is more than 1GB**), you need at least 16GB RAM space to analyze the images. After opening imageJ, go to `Edit` -> `Options` -> `Memory & Threads...`. Change the **Maximum memory** to **16000MB**. Restart the imageJ, and you should be able to open the images.
 
-* `VN.Rdata`: sample annotation table and gene expression matrix tables with mouse gene symbols or ortholog human gene symbols as row names.
-* Raw RNA-seq reads are saved in **.sra** format. You need install [sra-tools v2.3.5-2](https://github.com/ncbi/sra-tools) and run the command below to extract the pair-end sequencing data.
+* **DAPI**: 10-195
+* **Cy2** (CFSE): 50-255
+* **Cy3** (tdRed): 50-255
+* **Cy5** (lectin): 10-255
 
-```
-fastq-dump -I --split-3 SRRXXXXXXX.sra
-```
+For the **DAPI** channel, we only interested in the boundary edge areas, we used **Freehand selection** tools in imageJ to select the boundary edge of the tumor, then choose `File` -> `Save as` -> `XY Coordinates...` to save the boundary edge. This is used in generating random points in image simulation.
 
-## Data Processing Overview
+We then used **Watershed** algorithm to identify CD4+ T cells and lectin+ cells.
 
-Illumina Nextseq 500 automatically used **bcl2fastq2** (version 2.17) for basecalling. FASTQ files were downloaded from BaseSpace.
+* `Process` -> `Binary` -> `Make Binary`
+* `Process` -> `Binary` -> `Watershed`
+* `Analyze` -> `Analyze Particles...` -> `Size (1000-Inf)`, `Circularity (0.75-1.00)`, `Mask`, `Record Start`
 
-RNA-seq NGS reads were mapped using [STAR](https://github.com/alexdobin/STAR) RNA-seq aligner (version 2.4.1d) and quantified using [RSEM](http://deweylab.github.io/RSEM/) (version 1.2.28). The bash code can be found in **RNAseqReadsMapping.sh**.
+The quantification source data are saved as **ImageSimulation.xlsx** in `vesselNormalization/data` folder. There are 4 sheets.
 
-Average insert sizes were calculated for each sample. Consistent with Bioanalyzer electrophoresis plot, one sample (**CD4KO_9768**) was shown to be an outlier and was removed before proceeding to downstream analysis. An outlier is defined as a number that is more than 1.5 times the inter-quartile range away from either the lower or upper quartiles. Speciﬁcally, if a number is less than `Q1 - 1.5×IQR` or greater than `Q3 + 1.5×IQR`, then it is an outlier.
+* **DAPI** sheet: the localization of tumor boundary edge area.
+* **Cy2** sheet: the minimum distance between tdRed+;CFSE+ CD4+ naïve T cells and lectin+ vessel. Since there is very limited number (6 in all), this distance is calculated manually.
+* **Cy3** sheet: the localization of tdRed+ stimulated/activated CD4+ T cells. This is automatically quantified by imageJ.
+* **Cy5** sheet: the localization of lectin+ endothelial cells. This is automatically quantified by imageJ.
 
-[DEseq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) v1.14.1 R package was used to normalize the gene expression matrix. The R code for data normalization can be found in `RNAseqDataNormalization.Rmd`. The normalization data can be directly download from [GSE89758](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89758).
-
-## Gene Set Enrichment Analysis
-
-Because the [GSEA](http://software.broadinstitute.org/gsea/index.jsp) MSigdb only support human gene symbols, we cannot apply our RNA-seq data (mouse tumor endothelial cells) directly. There are two options: **1)** Convert mouse gene symbol to human gene symbol as we have done for **ssGSEA** projection. This may cause loss of some genes as not all the mouse genes have human ortholog. **2)** Used mouse version gene set file.
-
-We can use curated mouse version Gene Ontology Biological Process Gene Set database from [Bader Lab's GeneSets](http://baderlab.org/GeneSets). Go to their [FTP portal](http://download.baderlab.org/EM_Genesets/). In the manuscript, we use the **Mouse_GOBP_AllPathways_no_GO_iea_May_24_2015_symbol.gmt** of [May_24_2015/](http://download.baderlab.org/EM_Genesets/May_24_2015/Mouse/symbol/) version.
-
-Since this GSEA output file is more than 100MB, we deposited the result to [figshare](https://figshare.com/), which can be downloaded from this [link](https://figshare.com/articles/GSEA_Output_for_RNA-seq_Experiments/4625134).
-
-## Other Souece Codes
-
-The souece codes for **Extended Data Fig. 8b-h** can be found in **ExtendedFig8.Rmd**.
- 
+**ExtendedFig8.Rmd** is the source code for **Extended Data Fig. 8c,d**.
