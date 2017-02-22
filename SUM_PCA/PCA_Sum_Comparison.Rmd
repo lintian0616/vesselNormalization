@@ -72,7 +72,7 @@ combined_sum.group[is.na(combined_sum.group)] = "low"
 combined_sum.group <- factor(combined_sum.group, levels=c("high", "medium", "low"))
 ```
 
-### Extended Fig1 a
+### Comparing (∑GPAGs−∑PPAGs) with PCA using Correlation plot 
 
 ```{r}
 ## GPAGs
@@ -89,47 +89,164 @@ cor.test(PCA_Sum_metabric.d$combined_PC1, PCA_Sum_metabric.d$combined_sum)
 ```
 
 
-### Extended Fig1 b
+### Supplementary Table 1c
 
 ```{r}
-## GPAGs
+## GPAGs: ∑GPAGs
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ GPAGs_sum.group)
 coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ GPAGs_sum.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ GPAGs_sum.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (47/324)", "med (88/326)", "low (125/330)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 
-
-## PPAGs
-survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_sum.group)
-coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_sum.group)
-plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ PPAGs_sum.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
-legend("bottomleft", c("high (143/328)", "med (68/325)", "low (49/327)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
-
-## Combined Score
-survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_sum.group)
-coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_sum.group)
-plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ combined_PC1.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
-legend("bottomleft", c("high (44/323)", "med (77/327)", "low (139/330)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
-```
-
-### Extended Fig1 c
-
-```{r}
-## GPAGs
+## GPAGs: PCA
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ GPAGs_PC1.group)
 coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ GPAGs_PC1.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ GPAGs_PC1.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (53/322)", "med (82/327)", "low (125/331)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 
-## PPAGs
+
+## PPAGs: ∑PPAGs
+survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_sum.group)
+coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_sum.group)
+plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ PPAGs_sum.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
+legend("bottomleft", c("high (143/328)", "med (68/325)", "low (49/327)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
+
+## PPAGs: PCA
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_PC1.group)
 coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ PPAGs_PC1.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ PPAGs_PC1.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (126/326)", "med (78/327)", "low (56/327)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
 
-## Combined Score
+
+## Combined Score: (∑GPAGs−∑PPAGs)
+survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_sum.group)
+coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_sum.group)
+plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ combined_PC1.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
+legend("bottomleft", c("high (44/323)", "med (77/327)", "low (139/330)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
+
+## Combined Score: PCA
 survdiff(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_PC1.group)
 coxph(Surv(metabric.d.ann$T, metabric.d.ann$DSS) ~ combined_PC1.group)
 plot(survfit(Surv(metabric.d.ann$T/30, metabric.d.ann$DSS) ~ combined_PC1.group), col=c("red", "orange", "green"), lty=1, xlab = "Months", ylab = "Disease-Free Survival Freq", ylim=c(0, 1), mark.time = TRUE)
 legend("bottomleft", c("high (49/323)", "med (73/329)", "low (138/328)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
+```
+
+
+## Test the (ΣGPAGs−ΣPPAGs) in METABRIC Validation Dataset (Supplementary Table 1d)
+
+The gene expression information is stored in **metabric.v.exp**; row: patient/sample ids; col: gene names
+The patient annotation information is stored in **metabric.v.ann**; row: patient/sample ids; col: clinical parameters
+
+```{r}
+## Combined Score: (∑GPAGs−∑PPAGs) 
+combineAng.v.sum <- apply(metabric.v.exp[, GPAGs], 1, sum) - apply(metabric.v.exp[, PPAGs], 1, sum)
+combineAng.v.sum.g <- cut(combineAng.v.sum, breaks = quantile(combineAng.v.sum, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
+combineAng.v.sum.g[is.na(combineAng.v.sum.g)] = "low"
+combineAng.v.sum.g <- factor(combineAng.v.sum.g, levels=c("high", "medium", "low"))
+coxph(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combineAng.v.sum.g)
+survdiff(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combineAng.v.sum.g) # p = 7.49e-06
+plot(survfit(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combineAng.v.sum.g), col=c("red", "orange", "green"), lty=1, lwd=1, xlab = "Months", ylab = "Disease-Free Survival Prob.", ylim=c(0, 1))
+legend("bottomleft", c("high (50/329)", "med (75/330)", "low (121/332)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=1)
+
+## Combined Score: PCA
+GPAGs_v <- as.matrix(metabric.v.exp[, GPAGs])
+GPAGs_v_svd <- svd(sweep(GPAGs_v, 2, colMeans(GPAGs_v), "-"))
+GPAGs_v_PC1 <- -GPAGs_v_svd$u[, 1] ## PCA approach
+cor.test(GPAGs_v_PC1, apply(GPAGs_v, 1, sum))
+head(GPAGs_v_svd$d^2/sum(GPAGs_v_svd$d^2))
+
+PPAGs_v <- as.matrix(metabric.v.exp[, PPAGs])
+PPAGs_v_svd <- svd(sweep(PPAGs_v, 2, colMeans(PPAGs_v), "-"))
+PPAGs_v_PC1 <- -PPAGs_v_svd$u[, 1] ## PCA approach
+cor.test(PPAGs_v_PC1, apply(PPAGs_v, 1, sum))
+head(PPAGs_v_svd$d^2/sum(PPAGs_v_svd$d^2))
+
+combined_v_pca <- GPAGs_v_PC1 - PPAGs_v_PC1
+cor.test(combineAng.v.sum, combined_v_pca)
+combined_v_pca.g <- cut(combined_v_pca, breaks = quantile(combined_v_pca, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
+combined_v_pca.g[is.na(combined_v_pca.g)] = "low"
+combined_v_pca.g <- factor(combined_v_pca.g, levels=c("high", "medium", "low"))
+coxph(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combined_v_pca.g)
+```
+
+## Test the (ΣGPAGs−ΣPPAGs) for Relapse in (GSE1456) (Supplementary Table 1d)
+
+```{r}
+load("~/vesselNormalization/data/gse1456.RData") ## Used processed GSE1456.RData
+```
+
+The gene expression information is stored in **gse1456.exp**; row: gene names; col: patient/sample ids
+The patient annotation information is stored in **gse1456.ann**; row: patient/sample ids; col: clinical parameters
+
+```{r}
+## Combined Score: (∑GPAGs−∑PPAGs) 
+GPAGs_gse1456 <- GPAGs[GPAGs %in% rownames(gse1456.exp)]
+PPAGs_gse1456 <- PPAGs[PPAGs %in% rownames(gse1456.exp)]
+gse1456.combine <- apply(gse1456.exp[GPAGs_gse1456, ], 2, sum) - apply(gse1456.exp[PPAGs_gse1456, ], 2, sum)
+gse1456.combine.group <- cut(gse1456.combine, breaks = quantile(gse1456.combine, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
+gse1456.combine.group[is.na(gse1456.combine.group)] = "low"
+gse1456.combine.group <- factor(gse1456.combine.group, levels=c("high", "medium", "low"))
+coxph(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ gse1456.combine.group)
+survdiff(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ gse1456.combine.group) # p = 6.89e-05
+
+## Combined Score: PCA
+GPAGs_gse1456_pca <- t(as.matrix(gse1456.exp[GPAGs_gse1456, ]))
+GPAGs_gse1456_pca_svd <- svd(sweep(GPAGs_gse1456_pca, 2, colMeans(GPAGs_gse1456_pca), "-"))
+GPAGs_gse1456_PC1 <- GPAGs_gse1456_pca_svd$u[, 1] ## PCA approach
+cor.test(GPAGs_gse1456_PC1, apply(gse1456.exp[GPAGs_gse1456, ], 2, sum))
+head(GPAGs_gse1456_pca_svd$d^2/sum(GPAGs_gse1456_pca_svd$d^2))
+
+PPAGs_gse1456_pca <- t(as.matrix(gse1456.exp[PPAGs_gse1456, ]))
+PPAGs_gse1456_pca_svd <- svd(sweep(PPAGs_gse1456_pca, 2, colMeans(PPAGs_gse1456_pca), "-"))
+PPAGs_gse1456_PC1 <- -PPAGs_gse1456_pca_svd$u[, 1] ## PCA approach
+cor.test(PPAGs_gse1456_PC1, apply(gse1456.exp[PPAGs_gse1456, ], 2, sum))
+head(PPAGs_gse1456_pca_svd$d^2/sum(PPAGs_gse1456_pca_svd$d^2))
+
+combined_gse1456_pca <- GPAGs_gse1456_PC1 - PPAGs_gse1456_PC1
+cor.test(combined_gse1456_pca, gse1456.combine)
+combined_gse1456_pca.g <- cut(combined_gse1456_pca, breaks = quantile(combined_gse1456_pca, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
+combined_gse1456_pca.g[is.na(combined_gse1456_pca.g)] = "low"
+combined_gse1456_pca.g <- factor(combined_gse1456_pca.g, levels=c("high", "medium", "low"))
+coxph(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ combined_gse1456_pca.g)
+```
+
+## Test the (ΣGPAGs−ΣPPAGs) for Distant Metastasis in (GSE2990) (Fig1 e)
+
+```{r}
+load("~/vesselNormalization/data/gse2990.RData")
+```
+
+The gene expression information is stored in **gse2990.exp**; row: gene names; col: patient/sample ids
+The patient annotation information is stored in **gse2990.ann**; row: patient/sample ids; col: clinical parameters
+
+```{r}
+## Combined Score: (∑GPAGs−∑PPAGs) 
+GPAGs_gse2990 <- GPAGs[GPAGs %in% rownames(gse2990.exp)]
+PPAGs_gse2990 <- PPAGs[PPAGs %in% rownames(gse2990.exp)]
+gse2990.combine <- apply(gse2990.exp[GPAGs_gse2990, ], 2, sum) - apply(gse2990.exp[PPAGs_gse2990, ], 2, sum)
+gse2990.combine.group <- cut(gse2990.combine, breaks = quantile(gse2990.combine, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
+gse2990.combine.group[is.na(gse2990.combine.group)] = "low"
+gse2990.combine.group <- factor(gse2990.combine.group, levels=c("high", "medium", "low"))
+coxph(Surv(gse2990.ann$time.dmfs*12, gse2990.ann$event.dmfs) ~ gse2990.combine.group)
+survdiff(Surv(gse2990.ann$time.dmfs*12, gse2990.ann$event.dmfs) ~ gse2990.combine.group) # p = 0.0022
+
+## Combined Score: PCA
+GPAGs_gse2990_pca <- t(as.matrix(gse2990.exp[GPAGs_gse2990, ]))
+GPAGs_gse2990_pca_svd <- svd(sweep(GPAGs_gse2990_pca, 2, colMeans(GPAGs_gse2990_pca), "-"))
+GPAGs_gse2990_PC1 <- GPAGs_gse2990_pca_svd$u[, 1] ## PCA approach
+cor.test(GPAGs_gse2990_PC1, apply(gse2990.exp[GPAGs_gse2990, ], 2, sum))
+head(GPAGs_gse2990_pca_svd$d^2/sum(GPAGs_gse2990_pca_svd$d^2))
+
+PPAGs_gse2990_pca <- t(as.matrix(gse2990.exp[PPAGs_gse2990, ]))
+PPAGs_gse2990_pca_svd <- svd(sweep(PPAGs_gse2990_pca, 2, colMeans(PPAGs_gse2990_pca), "-"))
+PPAGs_gse2990_PC1 <- -PPAGs_gse2990_pca_svd$u[, 1] ## PCA approach
+cor.test(PPAGs_gse2990_PC1, apply(gse2990.exp[PPAGs_gse2990, ], 2, sum))
+head(PPAGs_gse2990_pca_svd$d^2/sum(PPAGs_gse2990_pca_svd$d^2))
+
+combined_gse2990_pca <- GPAGs_gse2990_PC1 - PPAGs_gse2990_PC1
+cor.test(combined_gse2990_pca, gse2990.combine)
+combined_gse2990_pca.g <- cut(combined_gse2990_pca, breaks = quantile(combined_gse2990_pca, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
+combined_gse2990_pca.g[is.na(combined_gse2990_pca.g)] = "low"
+combined_gse2990_pca.g <- factor(combined_gse2990_pca.g, levels=c("high", "medium", "low"))
+coxph(Surv(gse2990.ann$time.dmfs*12, gse2990.ann$event.dmfs) ~ combined_gse2990_pca.g)
 ```

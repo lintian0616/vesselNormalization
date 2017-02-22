@@ -54,7 +54,7 @@ PPAGs <- PPAGs[order(PPAGs$logFC, decreasing = FALSE), ]
 PPAGs
 ```
 
-## Visualization of GPAGs and PPAGs Using Heatmap (Fig1 a)
+## Visualization of GPAGs and PPAGs Using Heatmap (Fig. 1a)
 
 ```{r}
 library(gplots) ## For plot the heatmap
@@ -75,7 +75,7 @@ hmcol <- c(rep("#B35806", 90), colorRampPalette(brewer.pal(11, "PuOr"))(50), rep
 heatmap.2(t(selected_patient.d.exp[, select.ang.genes]), col=hmcol, Rowv=rowv, Colv=colv, trace = "none", scale ="row", labRow=NA, labCol=NA, keysize = 1.2, key.title="Color Key")
 ```
 
-## Survival Analysis on Two Clusters in the Heatmap (Fig1 b)
+## Survival Analysis on Two Clusters in the Heatmap (Fig. 1b)
 
 ```{r}
 library(survival)
@@ -86,62 +86,8 @@ plot(survfit(Surv(selected_patient.d.ann$T/30, selected_patient.d.ann$DSS) ~ pat
 legend("bottomleft", c("Cluster I (151/333)", "Cluster II (109/475)"), col=c("#CC476B", "#009681"), lty=1, bty = "n", lwd=1)
 ```
 
-## Test the (ΣGPAGs−ΣPPAGs) in METABRIC Validation Dataset (Fig1 c)
 
-The gene expression information is stored in **metabric.v.exp**; row: patient/sample ids; col: gene names
-The patient annotation information is stored in **metabric.v.ann**; row: patient/sample ids; col: clinical parameters
-
-```{r}
-combineAng.vScore <- apply(metabric.v.exp[, rownames(GPAGs)], 1, sum) - apply(metabric.v.exp[, rownames(PPAGs)], 1, sum)
-combineAng.vGroup <- cut(combineAng.vScore, breaks = quantile(combineAng.vScore, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
-combineAng.vGroup[is.na(combineAng.vGroup)] = "low"
-combineAng.vGroup <- factor(combineAng.vGroup, levels=c("high", "medium", "low"))
-survdiff(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combineAng.vGroup) # p = 7.49e-06
-plot(survfit(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combineAng.vGroup), col=c("red", "orange", "green"), lty=1, lwd=1, xlab = "Months", ylab = "Disease-Free Survival Prob.", ylim=c(0, 1))
-legend("bottomleft", c("high (50/329)", "med (75/330)", "low (121/332)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=1)
-```
-
-## Test the (ΣGPAGs−ΣPPAGs) for Relapse in (GSE1456) (Fig1 d)
-
-```{r}
-load("~/vesselNormalization/data/gse1456.RData") ## Used processed GSE1456.RData
-```
-
-The gene expression information is stored in **gse1456.exp**; row: gene names; col: patient/sample ids
-The patient annotation information is stored in **gse1456.ann**; row: patient/sample ids; col: clinical parameters
-
-```{r}
-GPAGs_gse1456 <- rownames(GPAGs)[rownames(GPAGs) %in% rownames(gse1456.exp)]
-PPAGs_gse1456 <- rownames(PPAGs)[rownames(PPAGs) %in% rownames(gse1456.exp)]
-gse1456.combine <- apply(gse1456.exp[GPAGs_gse1456, ], 2, sum) - apply(gse1456.exp[PPAGs_gse1456, ], 2, sum)
-gse1456.combine.group <- cut(gse1456.combine, breaks = quantile(gse1456.combine, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
-gse1456.combine.group[is.na(gse1456.combine.group)] = "low"
-survdiff(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ gse1456.combine.group) # p = 6.89e-05
-plot(survfit(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ gse1456.combine.group), col=c("green", "orange", "red"), lty=1, lwd=1, xlab = "Months", ylab = "Relapse-Free Survival Prob.", ylim=c(0, 1))
-legend("bottomleft", c("high (6/53)", "med (10/53)", "low (24/53)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=1)
-```
-
-## Test the (ΣGPAGs−ΣPPAGs) for Distant Metastasis in (GSE2990) (Fig1 e)
-
-```{r}
-load("~/vesselNormalization/data/gse2990.RData")
-```
-
-The gene expression information is stored in **gse2990.exp**; row: gene names; col: patient/sample ids
-The patient annotation information is stored in **gse2990.ann**; row: patient/sample ids; col: clinical parameters
-
-```{r}
-GPAGs_gse2990 <- rownames(GPAGs)[rownames(GPAGs) %in% rownames(gse2990.exp)]
-PPAGs_gse2990 <- rownames(PPAGs)[rownames(PPAGs) %in% rownames(gse2990.exp)]
-gse2990.combine <- apply(gse2990.exp[GPAGs_gse2990, ], 2, sum) - apply(gse2990.exp[PPAGs_gse2990, ], 2, sum)
-gse2990.combine.group <- cut(gse2990.combine, breaks = quantile(gse2990.combine, probs = seq(from = 0, to = 1, by = 1/3)), labels = c("low", "medium", "high"))
-gse2990.combine.group[is.na(gse2990.combine.group)] = "low"
-survdiff(Surv(gse2990.ann$time.dmfs*12, gse2990.ann$event.dmfs) ~ gse2990.combine.group) # p = 0.0022
-plot(survfit(Surv(gse2990.ann$time.dmfs*12, gse2990.ann$event.dmfs) ~ gse2990.combine.group), col=c("green", "orange", "red"), lty=1, lwd=1, xlab = "Months", ylab = "Distant Metastasis-Free Survival Prob.", ylim=c(0, 1))
-legend("bottomleft", c("high (8/59)", "med (10/60)", "low (22/60)"), col=c("red", "orange", "green"), lty=1, bty = "n", lwd=4)
-```
-
-## Correlation of GPAGs and PPAGs with T Cell Activation (Fig1 i)
+## Correlation of GPAGs and PPAGs with T Cell Activation (Fig. 1f)
 
 To test the correlation of GPAGs, PPAGs with T cell activation, we used the samples in the combined METABRIC dataset (Discovery and Validation).
 
