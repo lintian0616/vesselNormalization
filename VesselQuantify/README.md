@@ -10,7 +10,7 @@ Here, we illustrate how vessel density/length quantification works by intentiona
 
 ![1](IllustrationImages/1.jpg)
 
-### Steps involved in texture segmentation.
+### Co-localization Quantification (eg. lectin perfusion)
 
 An “Adaptive” algorithm was applied to remove background, and “Otsu” algorithm was used to segment individual vessel cells (Blue: DAPI; Green: Lectin; Red: CD31).
 
