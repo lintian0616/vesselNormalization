@@ -42,5 +42,5 @@ Since this GSEA output file is more than 100MB, we deposited the result to [figs
 
 ## Other Souece Codes
 
-The souece codes for **Extended Data Fig. 7b-h** can be found in **ExtendedFig7.Rmd**.
+The souece codes for **Extended Data Fig. 7b-i** can be found in **ExtendedFig7.Rmd**.
  

@@ -74,7 +74,7 @@ ggplot() + geom_point(data=combinedCD31.df, shape=21, size=4, alpha=0.8, aes(x=t
 ```
 
 
-## Compare GPAGs/PPAGs in Tumor with or without Vascular Invasion (Extended Data Fig. 1c)
+### Compare GPAGs/PPAGs in Tumor with or without Vascular Invasion (Extended Data Fig. 1c)
 
 ```{r}
 goodAng <- goodAng[goodAng %in% rownames(HCC.exp)]
@@ -115,7 +115,7 @@ TC.GSEA <- rbind(c("#1.2", rep("", ncol(TC.GSEA)-1)), c(nrow(TC.GSEA), ncol(TC.G
 write.table(TC.GSEA, file="~/GSE51401_TC_mednorm.gct", row.names=FALSE, col.names=FALSE, sep="\t", quote=FALSE)
 ```
 
-## Phenotype Data
+### Phenotype Data
 
 The phenotype data is GPAGs/PPAGs/combined in CD31+ tumor endothelial cells.
 
