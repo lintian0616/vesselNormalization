@@ -16,7 +16,7 @@ library(survival)
 library(ggplot2)
 ```
 
-### Calculate Signatures
+## Calculate Signatures
 
 ```{r}
 ## GPAGs
@@ -72,7 +72,7 @@ combined_sum.group[is.na(combined_sum.group)] = "low"
 combined_sum.group <- factor(combined_sum.group, levels=c("high", "medium", "low"))
 ```
 
-### Comparing (∑GPAGs−∑PPAGs) with PCA using Correlation plot 
+## Comparing (∑GPAGs−∑PPAGs) with PCA using Correlation plot 
 
 ```{r}
 ## GPAGs
@@ -89,7 +89,7 @@ cor.test(PCA_Sum_metabric.d$combined_PC1, PCA_Sum_metabric.d$combined_sum)
 ```
 
 
-### Supplementary Table 1c
+## Supplementary Table 1c
 
 ```{r}
 ## GPAGs: ∑GPAGs
@@ -169,7 +169,7 @@ combined_v_pca.g <- factor(combined_v_pca.g, levels=c("high", "medium", "low"))
 coxph(Surv(metabric.v.ann$T/30, metabric.v.ann$DSS) ~ combined_v_pca.g)
 ```
 
-## Test the (ΣGPAGs−ΣPPAGs) for Relapse in (GSE1456) (Supplementary Table 1d)
+## Test the (ΣGPAGs−ΣPPAGs) for Relapse in (GSE1456) (Supplementary Table 1e)
 
 ```{r}
 load("~/vesselNormalization/data/gse1456.RData") ## Used processed GSE1456.RData
@@ -210,7 +210,7 @@ combined_gse1456_pca.g <- factor(combined_gse1456_pca.g, levels=c("high", "mediu
 coxph(Surv(gse1456.ann$RFS, gse1456.ann$Relapse) ~ combined_gse1456_pca.g)
 ```
 
-## Test the (ΣGPAGs−ΣPPAGs) for Distant Metastasis in (GSE2990) (Fig1 e)
+## Test the (ΣGPAGs−ΣPPAGs) for Distant Metastasis in (GSE2990) (Supplementary Table 1f)
 
 ```{r}
 load("~/vesselNormalization/data/gse2990.RData")

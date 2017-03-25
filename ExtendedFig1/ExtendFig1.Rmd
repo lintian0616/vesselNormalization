@@ -102,7 +102,7 @@ wilcox.test(vi.df$combined ~ vi.df$invasion)
 ggplot(vi.df, aes(x=invasion, y=scale(combined)))+scale_colour_manual(values = c("#E41A1C","#377EB8"))+geom_point(aes(colour=invasion), size=2, position="jitter")+geom_boxplot(alpha=0, outlier.size=NA)+scale_y_continuous(breaks=seq(-4, 4, by=2), limits=c(-4, 4))+theme_bw()+theme(axis.title.x = element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), panel.border=element_blank(), axis.line.x=element_line(colour="black"), axis.line.y=element_line(colour="black"))+coord_fixed(ratio=0.56)
 ```
 
-## Gene Set Enrichment Analysis for Correlated Pathways in TC (non-TECs) (Extended Data Fig. 1d,e)
+## Gene Set Enrichment Analysis for Correlated Pathways in TC (non-TECs) (Extended Data Fig. 1d, e)
 
 ### Gene Expression Data
 

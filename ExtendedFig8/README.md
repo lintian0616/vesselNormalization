@@ -33,4 +33,4 @@ The quantification source data are saved as **ImageSimulation.xlsx** in `vesselN
 * **Cy3** sheet: the localization of tdRed+ stimulated/activated CD4+ T cells. This is automatically quantified by imageJ.
 * **Cy5** sheet: the localization of lectin+ endothelial cells. This is automatically quantified by imageJ.
 
-**ExtendedFig8.Rmd** is the source code for **Extended Data Fig. 8c,d**.
+**ExtendedFig8.Rmd** is the source code for **Extended Data Fig. 8c, d**.

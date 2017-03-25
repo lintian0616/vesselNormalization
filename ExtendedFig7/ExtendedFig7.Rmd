@@ -11,7 +11,7 @@ output: html_document
 load("~/vesselNormalization/data/VN.RData")
 ```
 
-## ssGSEA and t-SNE Plot (Extended Data Fig. 7b,c)
+## ssGSEA and t-SNE Plot (Extended Data Fig. 7b, c)
 
 We will use ssGSEA projection to reduce the dimension. We run ssGSEA on [GenePattern](https://genepattern.broadinstitute.org). Choose the module called **ssGSEAProjection**. Instead of using latest beta version, we chose stable **v7**.
 
@@ -122,9 +122,9 @@ ggplot() + geom_errorbar(data=dot_df_Sphingolipid, aes(x=CD4TActivity, y=Sphingo
 ```
 
 
-## Pathway Analysis (Extended Data Fig. 7g,h)
+## Pathway Analysis (Extended Data Fig. 7g, h)
 
-As we are sequencing the CD31+ tumor endothelial cells, not all the genes are expressed in this specific cell type. When we perform pathway analysis, it is better to remove these genes out. We summed up **TPM** (Transcripts Per Kilobase Million) of each gene in all the samples and filtered out the genes with total counts no more than 50.
+As we are sequencing the CD31+ tumor endothelial cells, not all the genes are expressed in this specific cell type. When we perform pathway analysis, it is better to remove these genes out. We summed up the counts of each gene in all the samples and filtered out the genes with total counts no more than 50.
 
 In addition, since we used [MATQ-seq](http://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.4145.html), lots of pseudo-genes (non-polyA tailed) and less annotated genes were not excluded. These genes (start with **Gm** or end with **Rik**) are not useful for the current project, and we just removed them as well.
 

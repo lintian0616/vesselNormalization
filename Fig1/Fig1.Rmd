@@ -31,7 +31,7 @@ selected_patient.d.ann$last_follow_up_status <- ifelse(selected_patient.d.ann$la
 
 ## Differential Genes Selection
 
-The output is **Supplementary Table 1a,b**.
+The output is **Supplementary Table 1a, b**.
 
 ```{r}
 survival <- factor(selected_patient.d.ann$last_follow_up_status)

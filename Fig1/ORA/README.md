@@ -1,4 +1,4 @@
-`VennDiagram.Rmd` is used to generate **Fig1 f**.
+`VennDiagram.Rmd` is used to generate **Fig1 c**.
 
 30 **GPAGs** and 27 **PPAGs** can be loaded from `data`, and used as input for [KOBAS](http://kobas.cbi.pku.edu.cn/index.php).
 
