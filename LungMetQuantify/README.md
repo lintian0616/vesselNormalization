@@ -6,7 +6,7 @@ The texture segmentation algorithm is design to quantify **macro**metastasis. Si
 
 ![ExperimentalDesign](IllustrationImages/ExperimentalDesign1.jpg)
 
-Another way to quantify the **macro**metastasis is India Ink assay, which is used in **Fig. 3**. Since we counted the lung metastasis nodules in India Ink Assay, the nodules should not be too big, otherwise the nodules will fused and affect the quantification. Similar to the design in **Fig. 2**, we resected the tumor when the size reached 500mm<sup>3</sup>, but we terminated the experiment and quantified the number of lung metastasis nodules on **Day 28** post-E0771 injection.
+Another way to quantify the **macro**metastasis is India Ink assay, which was used in **Fig. 3**. In India Ink Assay, the nodules should not be too big. Otherwise the nodules will be fused and this can affect the quantification. Similar to the design in **Fig. 2**, we resected the tumor when the size reached 500mm<sup>3</sup>, but we terminated the experiment and quantified the number of lung metastasis nodules on **Day 28** post-E0771 injection.
 
 ![ExperimentalDesign](IllustrationImages/ExperimentalDesign2.jpg)
 
