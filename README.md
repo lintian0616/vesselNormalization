@@ -1,7 +1,7 @@
 Mutual regulation of tumour vessel normalization and immunostimulatory reprogramming
 ======
 
-This repository contains the source data and source codes for bioinformatic analysis. The paper is published online in [Nature](http://www.nature.com/nature/journal/vaop/ncurrent/full/nature21724.html).
+This repository contains the source data and source codes for bioinformatic analysis. The paper was published in [Nature. 544, 250–254](https://www.nature.com/nature/journal/v544/n7649/full/nature21724.html).
 
 File Name  | Description
 ------------- | -------------
