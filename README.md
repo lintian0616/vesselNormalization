@@ -6,6 +6,7 @@ This repository contains the source data and source codes for bioinformatic anal
 File Name  | Description
 ------------- | -------------
 **data** | source data for the bioinformatic analysis
+**ClonogenicAssay** | quantification of circulating tumor cells
 **LungMetQuantify** | [MATLAB](https://www.mathworks.com/) source code for lung macro-metastasis quantification
 **VesselQuantify** | [CellProfiler](http://cellprofiler.org/) pipelines for vessel density/length and co-localization quantifications
 **SUM_PCA** | compare ∑GPAGs − ∑PPAGs with the first principle component from Principle Component Analysis (**Supplementary Table 1c-f**)
